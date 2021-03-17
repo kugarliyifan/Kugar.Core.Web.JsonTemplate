@@ -1,0 +1,61 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
+		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Version>1.0.0</Version>
+		<Authors>Kugar</Authors>
+		<Product>Kugar.Core.Web.JsonTemplate</Product>
+		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
+		<Description>一个通用的Web工具类</Description>
+		<PackageProjectUrl>https://github.com/kugarliyifan/Kugar.UI.Web</PackageProjectUrl>
+		<PackageReleaseNotes>1.移除Servers下的几个类,并转移到Kugar.Core.NetCore项目中</PackageReleaseNotes>
+		<RepositoryUrl>https://github.com/kugarliyifan/Kugar.UI.Web</RepositoryUrl>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="  '$(TargetFramework)' == 'netcoreapp3.1'">
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+	</PropertyGroup>
+
+	<ItemGroup Condition="  '$(TargetFramework)' == 'netcoreapp3.1'">
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup Condition="  '$(TargetFramework)' == 'net5.0'">
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<OutputPath>bin\</OutputPath>
+		<DocumentationFile>\bin\Kugar.Core.Web.JsonTemplate.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="fasterflect" Version="3.0.0" />
+		<PackageReference Include="Kugar.Core.NetCore" Version="1.2.145" />
+		<PackageReference Include="NSwag.AspNetCore" Version="13.9.4" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
+			<Version>3.0.2</Version>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
+			<Version>3.1.10</Version>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
+			<Version>5.0.1</Version>
+		</PackageReference>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" />
+	</ItemGroup>
+
+</Project>

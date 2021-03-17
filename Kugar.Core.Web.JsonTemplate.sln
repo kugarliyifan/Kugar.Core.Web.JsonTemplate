@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31019.35
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate", "Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.csproj", "{79A3206D-EFE4-4782-94ED-39B720FD142B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate.Test", "Kugar.Core.Web.JsonTemplate.Test\Kugar.Core.Web.JsonTemplate.Test.csproj", "{77AC45F6-D387-49A8-948F-A2D3753B2FB9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kugar.Core.Web.JsonTemplate.UnitTest", "Kugar.Core.Web.JsonTemplate.UnitTest\Kugar.Core.Web.JsonTemplate.UnitTest.csproj", "{46271784-02D5-48C5-90A6-383096ECFD27}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79A3206D-EFE4-4782-94ED-39B720FD142B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79A3206D-EFE4-4782-94ED-39B720FD142B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79A3206D-EFE4-4782-94ED-39B720FD142B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79A3206D-EFE4-4782-94ED-39B720FD142B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77AC45F6-D387-49A8-948F-A2D3753B2FB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77AC45F6-D387-49A8-948F-A2D3753B2FB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77AC45F6-D387-49A8-948F-A2D3753B2FB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77AC45F6-D387-49A8-948F-A2D3753B2FB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46271784-02D5-48C5-90A6-383096ECFD27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46271784-02D5-48C5-90A6-383096ECFD27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46271784-02D5-48C5-90A6-383096ECFD27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46271784-02D5-48C5-90A6-383096ECFD27}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F6CFC861-89CB-4136-B3F4-B0CFF0C31739}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>F:\Projects\Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.Test\Kugar.Core.Web.JsonTemplate.Test.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.csproj" />
+  </ItemGroup>
+
+
+</Project>

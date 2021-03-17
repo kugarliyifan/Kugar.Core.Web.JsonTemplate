@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Kugar.Core.Web.JsonTemplate.Test</name>
+    </assembly>
+    <members>
+        <member name="M:Kugar.Core.Web.JsonTemplate.Test.Controllers.HomeController.Index(System.String,System.String,System.Int32,System.ValueTuple{System.String,System.Int32})">
+            <summary>
+            api测试
+            </summary>
+            <param name="str1">测试参数1</param>
+            <param name="int2">测试参数2</param>
+            <returns></returns>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Input.Ints">
+            <summary>
+            测试333
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Input.Strr">
+            <summary>
+            sdfsdfsdf
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.Prop2">
+            <summary>
+            prop2原备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.Prop1">
+            <summary>
+            prop1原备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.Prop3">
+            <summary>
+            prop3备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.ArrayTest">
+            <summary>
+            数组测试备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.ArrayTest2">
+            <summary>
+            数组2测试备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.AP.str2">
+            <summary>
+            str2原备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.AP.str3">
+            <summary>
+            str3原备注
+            </summary>
+        </member>
+        <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.AP.int2">
+            <summary>
+            int2原备注
+            </summary>
+        </member>
+    </members>
+</doc>
