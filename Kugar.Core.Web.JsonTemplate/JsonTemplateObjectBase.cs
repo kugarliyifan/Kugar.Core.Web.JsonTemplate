@@ -7,6 +7,7 @@
     public abstract class JsonTemplateObjectBase<TModel> :IJsonTemplateObject
     {
         public abstract void BuildScheme(IObjectBuilder<TModel> builder);
-                
+
+        public object ModelType => typeof(TModel);
     }
 }

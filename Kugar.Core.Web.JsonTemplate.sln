@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate.Test", "Kugar.Core.Web.JsonTemplate.Test\Kugar.Core.Web.JsonTemplate.Test.csproj", "{77AC45F6-D387-49A8-948F-A2D3753B2FB9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kugar.Core.Web.JsonTemplate.UnitTest", "Kugar.Core.Web.JsonTemplate.UnitTest\Kugar.Core.Web.JsonTemplate.UnitTest.csproj", "{46271784-02D5-48C5-90A6-383096ECFD27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate.UnitTest", "Kugar.Core.Web.JsonTemplate.UnitTest\Kugar.Core.Web.JsonTemplate.UnitTest.csproj", "{46271784-02D5-48C5-90A6-383096ECFD27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

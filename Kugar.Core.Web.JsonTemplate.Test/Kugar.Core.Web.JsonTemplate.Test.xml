@@ -22,6 +22,12 @@
             sdfsdfsdf
             </summary>
         </member>
+        <member name="T:Kugar.Core.Web.JsonTemplate.Test.Controllers.WrapResultReturnJsonBuilder`1">
+            <summary>
+            在输出的数据外层加多一个ResultReturn的头部
+            </summary>
+            <typeparam name="TModel"></typeparam>
+        </member>
         <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.Prop2">
             <summary>
             prop2原备注

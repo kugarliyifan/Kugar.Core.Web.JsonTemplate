@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Fasterflect;
+using Kugar.Core.BaseStruct;
 using Kugar.Core.ExtMethod;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -33,12 +34,19 @@ namespace Kugar.Core.Web.JsonTemplate
                             x.IsPublic)
                 .ToArrayEx();
 
-
+            foreach (var c in typeAssemblies.SelectMany(x=>x.GetTypes()).Concat(typeof(ResultReturn).Assembly.GetTypes()))
+            {
+                ExpressionHelpers.InitXMl(c);
+            }
+            
+            
             foreach (var t in types)
             {
                 opt.TypeMappers.Add(new ObjectTypeMapper(t, (gen, resolver) =>
                 {
                     var builder = GlobalJsonTemplateCache.GetTemplateInfo(t);
+
+                    
 
                     return builder.SchemaBuilder.Schema;
 

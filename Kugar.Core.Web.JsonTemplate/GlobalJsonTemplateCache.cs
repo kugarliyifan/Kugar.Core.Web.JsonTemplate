@@ -18,8 +18,8 @@ namespace Kugar.Core.Web.JsonTemplate
     {
         private static ConcurrentDictionary<Type, object> _cache = new ConcurrentDictionary<Type, object>();
 
-        private static ConcurrentDictionary<string, ConstructorInvoker>
-            _cacheActionResultTypes = new ConcurrentDictionary<string, ConstructorInvoker>();
+        private static ConcurrentDictionary<Type,ConcurrentDictionary<Type,ConstructorInvoker>>
+            _cacheActionResultTypes = new ConcurrentDictionary<Type,ConcurrentDictionary<Type,ConstructorInvoker>>();
 
         public static IServiceProvider Provider { set; get; }
         
@@ -66,13 +66,23 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static ConstructorInvoker GetActionResultType(Type builderType,Type modelType)
         {
-            return _cacheActionResultTypes.GetOrAdd($"{builderType.FullName}-{modelType.FullName}", (b) =>
-            {
-                var actionResultType = typeof(JsonTemplateActionResult<>).MakeGenericType(modelType);
+            return _cacheActionResultTypes
+                .GetOrAdd(builderType, t => new ConcurrentDictionary<Type, ConstructorInvoker>())
+                .GetOrAdd(modelType, b =>
+                {
+                    var actionResultType = typeof(JsonTemplateActionResult<>).MakeGenericType(b);
 
-                return actionResultType.DelegateForCreateInstance(Flags.InstancePublic,
-                    typeof(Type));
-            });
+                    return actionResultType.DelegateForCreateInstance(Flags.InstancePublic,
+                        typeof(Type));
+                });
+
+            //return _cacheActionResultTypes.GetOrAdd($"{builderType.FullName}-{modelType.FullName}", (b) =>
+            //{
+            //    var actionResultType = typeof(JsonTemplateActionResult<>).MakeGenericType(modelType);
+
+            //    return actionResultType.DelegateForCreateInstance(Flags.InstancePublic,
+            //        typeof(Type));
+            //});
         }
 
         public static IObjectBuilderPipe<TModel> Build<TBuilder,TModel>(Type builderType,Type modelType)  where TBuilder : JsonTemplateObjectBase<TModel>, new()
@@ -99,7 +109,7 @@ namespace Kugar.Core.Web.JsonTemplate
 #if NETCOREAPP3_0 || NETCOREAPP3_1
             var jsonOpt = (IOptionsSnapshot<MvcNewtonsoftJsonOptions>)Provider.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
 
-            if (jsonOpt!=null &&jsonOpt.Value!=null)
+            if (jsonOpt?.Value != null)
             {
                 jsonResolver = jsonOpt.Value.SerializerSettings.ContractResolver as DefaultContractResolver;
             }
@@ -113,7 +123,7 @@ namespace Kugar.Core.Web.JsonTemplate
             //var _defaultSettings = JsonConvert.DefaultSettings?.Invoke();
 #endif
 
-            using var builder = new JsonTemplateObjectBuilder<TModel>(
+            var builder = new JsonTemplateObjectBuilder<TModel>(
                 new NSwagSchemeBuilder(scheme, s =>jsonResolver?.NamingStrategy?.GetPropertyName(s, false)??s),
                 generator,
                 schemaResolver);

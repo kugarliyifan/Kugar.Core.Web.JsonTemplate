@@ -6,7 +6,7 @@ namespace Kugar.Core.Web.JsonTemplate
 {
     public static class JsonTemplateObjectExt
     {
-        public static IActionResult JsonTemplate<TBuilder>(this ControllerBase controller,
+        public static IActionResult Json<TBuilder>(this ControllerBase controller,
             object value) where TBuilder : IJsonTemplateObject, new()
         {
             var constructorInvoker = GlobalJsonTemplateCache.GetActionResultType(typeof(TBuilder), value.GetType());

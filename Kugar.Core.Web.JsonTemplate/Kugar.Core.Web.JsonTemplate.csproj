@@ -8,10 +8,9 @@
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
-		<Description>一个通用的Web工具类</Description>
-		<PackageProjectUrl>https://github.com/kugarliyifan/Kugar.UI.Web</PackageProjectUrl>
-		<PackageReleaseNotes>1.移除Servers下的几个类,并转移到Kugar.Core.NetCore项目中</PackageReleaseNotes>
-		<RepositoryUrl>https://github.com/kugarliyifan/Kugar.UI.Web</RepositoryUrl>
+		<Description>一个WebApi格式化Json输出的类库</Description>
+		<PackageProjectUrl>https://github.com/kugarliyifan/Kugar.Core.Web.JsonTemplate</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kugarliyifan/Kugar.Core.Web.JsonTemplate</RepositoryUrl>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>

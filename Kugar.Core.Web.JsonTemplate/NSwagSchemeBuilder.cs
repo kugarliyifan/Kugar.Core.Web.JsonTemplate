@@ -95,6 +95,7 @@ namespace Kugar.Core.Web.JsonTemplate
             var p = new JsonSchemaProperty();
             p.Type = JsonObjectType.Array;
             p.Description = desciption;
+            p.IsNullableRaw = nullable;
             p.Item = new JsonSchema()
             {
                 Type = type

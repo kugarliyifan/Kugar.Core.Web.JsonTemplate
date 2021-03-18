@@ -2,9 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>857bb441-44f4-4382-a5c7-1a2e0008becd</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>F:\Projects\Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.Test\Kugar.Core.Web.JsonTemplate.Test.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DocumentationFile>F:\Projects\Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.Test\Kugar.Core.Web.JsonTemplate.Test.xml</DocumentationFile>
   </PropertyGroup>
 

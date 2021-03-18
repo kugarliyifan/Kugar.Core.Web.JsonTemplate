@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -44,7 +45,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static IObjectBuilder<TModel> AddProperties<TModel>(
             this IObjectBuilder<TModel> builder,
-            Expression<Func<TModel, object>>[] objectPropertyExpList
+            params Expression<Func<TModel, object>>[] objectPropertyExpList
             )
         {
             foreach (var item in objectPropertyExpList)
@@ -66,8 +67,8 @@ namespace Kugar.Core.Web.JsonTemplate
             return builder;
         }
 
-        public static IChildObjectBuilder<TParentModel, TModel> AddProperty<TParentModel, TModel, TValue>(
-            this IChildObjectBuilder<TParentModel, TModel> builder,
+        public static IChildObjectBuilder<TModel> AddProperty<TModel, TValue>(
+            this IChildObjectBuilder<TModel> builder,
             Expression<Func<TModel, TValue>> objectPropertyExp,
             string description = "",
             bool isNull = false,
@@ -89,14 +90,15 @@ namespace Kugar.Core.Web.JsonTemplate
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
+            
 
             return builder.AddProperty(propertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
                 ifCheckExp);
         }
 
-        public static IChildObjectBuilder<TParentModel, TModel> AddProperties<TParentModel, TModel>(
-            this IChildObjectBuilder<TParentModel, TModel> builder,
-            Expression<Func<TModel, object>>[] objectPropertyExpList
+        public static IChildObjectBuilder<TModel> AddProperties<TModel>(
+            this IChildObjectBuilder< TModel> builder,
+            params Expression<Func<TModel, object>>[] objectPropertyExpList
             )
         {
             foreach (var item in objectPropertyExpList)
@@ -170,19 +172,19 @@ namespace Kugar.Core.Web.JsonTemplate
             return builder;
         }
 
-        public static IChildObjectBuilder<TModel, TNewObject> FromObject<TModel, TNewObject>(this IObjectBuilder<TModel> builder,
+        public static IChildObjectBuilder<TNewObject> FromObject<TModel, TNewObject>(this IObjectBuilder<TModel> builder,
             Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
         )
         {
-            return (IChildObjectBuilder<TModel,TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
+            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
                 objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
         }
 
-        public static IChildObjectBuilder<TChildModel, TNewObject> FromObject<TParentModel,TChildModel, TNewObject>(this IChildObjectBuilder<TParentModel,TChildModel> builder,
+        public static IChildObjectBuilder< TNewObject> FromObject<TChildModel, TNewObject>(this IChildObjectBuilder<TChildModel> builder,
             Func<IJsonTemplateBuilderContext<TChildModel>, TNewObject> objectFactory
         )
         {
-            return (IChildObjectBuilder<TChildModel,TNewObject>)new ChildJsonTemplateObjectBuilder<TChildModel, TNewObject>(builder,
+            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TChildModel, TNewObject>(builder,
                 objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
         }
     }
@@ -294,7 +296,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static string GetMemberDescription(MemberExpression expr)
         {
-            var propertyName = expr.Member.Name;
+            var propertyName =$"{expr.Member.DeclaringType.Namespace}.{expr.Member.DeclaringType.Name}.{expr.Member.Name}";
 
             var desciption = _typeXmlDesc.TryGetValue( propertyName, "");
 
@@ -303,6 +305,11 @@ namespace Kugar.Core.Web.JsonTemplate
                 desciption = expr.Member.GetCustomAttribute<DescriptionAttribute>()?.Description;
             }
 
+            if (string.IsNullOrWhiteSpace(desciption))
+            {
+                desciption = expr.Member.GetCustomAttribute<DisplayNameAttribute>()?.DisplayName;
+            }
+            
             return desciption;
         }
 
@@ -346,11 +353,13 @@ namespace Kugar.Core.Web.JsonTemplate
 
             foreach (var item in lst)
             {
-                if (dic.ContainsKey(item.Key))
+                var key = $"{type.FullName}.{item.Key}";
+
+                if (dic.ContainsKey(key))
                 {
                     continue;
                 }
-                dic.Add(item.Key,item.Value.ToStringEx().Trim());
+                dic.Add(key,item.Value.ToStringEx().Trim());
             }
 
             if (!type.IsInterface && type.BaseType!=null)
