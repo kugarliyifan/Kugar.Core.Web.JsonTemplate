@@ -7,6 +7,7 @@ using System.Text;
 using Fasterflect;
 using Kugar.Core.BaseStruct;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,8 +1,6 @@
-﻿using System;
-using Fasterflect;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Kugar.Core.Web.JsonTemplate
+namespace Kugar.Core.Web.JsonTemplate.Helpers
 {
     public static class JsonTemplateObjectExt
     {

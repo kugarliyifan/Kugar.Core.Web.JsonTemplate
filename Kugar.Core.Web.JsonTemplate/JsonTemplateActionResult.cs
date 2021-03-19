@@ -16,7 +16,12 @@ namespace Kugar.Core.Web.JsonTemplate
         
     }
 
-    internal class JsonTemplateActionResult<TModel> : IJsonTemplateActionResult //where TBuilder:JsonTemplateObjectBase<TModel>,new()
+    public interface IJsonTemplateActionResult<TBuilder, in TModel> : IJsonTemplateActionResult
+    {
+
+    }
+
+    public class JsonTemplateActionResult<TBuilder,TModel> : IJsonTemplateActionResult<TBuilder,TModel> where TBuilder : JsonTemplateBase<TModel>, new()
     {
         private Type _builderType = null;
 
@@ -53,7 +58,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 jsonWriter.DateFormatHandling = jsonSettings?.DateFormatHandling?? DateFormatHandling.IsoDateFormat;
                 jsonWriter.Culture = jsonSettings?.Culture??CultureInfo.CurrentUICulture;
 
-                var objectBuilder=GlobalJsonTemplateCache.GetTemplate<TModel>(_builderType);
+                var objectBuilder=GlobalJsonTemplateCache.GetTemplate<TBuilder, TModel>();
 
                 var model = (TModel) Model;
 

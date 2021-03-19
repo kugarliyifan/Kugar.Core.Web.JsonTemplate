@@ -7,6 +7,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Kugar.Core.BaseStruct;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.JsonTemplate.Builders;
+using Kugar.Core.Web.JsonTemplate.Helpers;
+using Kugar.Core.Web.JsonTemplate.Templates;
 using NSwag.Annotations;
 
 namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
@@ -36,6 +39,20 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             return this.Json<TestTemplate2>(new Test<string, string>("22", "33"));
             
         }
+
+        [ProducesResponseType(typeof(TestTemplate3),200)]
+        public async Task<IActionResult> Index3()
+        {
+            //var p=GlobalJsonTemplateCache.Build<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3),
+            //    typeof(System.Collections.Generic.IEnumerable<AP>));
+
+            var b = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
+
+            var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
+
+            return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).ToArrayEx());
+
+        }
     }
 
     public class Input
@@ -52,7 +69,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
     }
 
 
-    public class TestTemplate2 : WrapResultReturnJsonBuilder<Test<string, string>>
+    public class TestTemplate2 : WrapResultReturnJsonTemplateBase<Test<string, string>>
     {
         protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>> builder)
         {
@@ -78,133 +95,17 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             (c) => new FailResultReturn("sdfs");
     }
 
-    /// <summary>
-    /// 在输出的数据外层加多一个ResultReturn的头部
-    /// </summary>
-    /// <typeparam name="TModel"></typeparam>
-    public abstract class WrapResultReturnJsonBuilder<TModel> : JsonTemplateObjectBase<TModel>
+    public class TestTemplate3 : WrapResultReturnArrayJsonTemplateBase<AP>
     {
-        private static readonly ResultReturnFactory<TModel>
-            _defaultResultFactory = (context) => SuccessResultReturn.Default;
-
-        protected WrapResultReturnJsonBuilder()
+        protected override void BuildReturnDataScheme(IArrayBuilder<AP> builder)
         {
-            this.ResultFactory = _defaultResultFactory;
-        }
-
-        public override void BuildScheme(IObjectBuilder<TModel> builder)
-        {
-            using (var b = BuildWrap(builder))
-            {
-                BuildReturnDataScheme(b);
-            }
-        }
-
-        protected abstract void BuildReturnDataScheme(IChildObjectBuilder<TModel> builder);
-
-        protected virtual ResultReturnFactory<TModel> ResultFactory
-        {
-            get;
-        }
-
-        protected virtual IChildObjectBuilder<TModel> BuildWrap(IObjectBuilder<TModel> builder)
-        {
-            return builder.FromReturnResult(context=>(ResultFactory??_defaultResultFactory).Invoke(context));
+            builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
         }
     }
 
-    public delegate ResultReturn ResultReturnFactory<in TModel>(IJsonTemplateBuilderContext<TModel> context);
-
     public static class Ext
     {
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>,bool> resultFactory)
-        {
-            source.AddProperty("isSuccess",resultFactory)
-                .AddProperty("message",x=>string.Empty)
-                .AddProperty("returnCode",x=>0,"返回的执行结果代码",example:0)
-                ;
 
-            return source.AddObject("returnData", x => x.Model);
-        }
-
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
-        {
-            using (var f = source.FromObject(resultFactory))
-            {
-                f.AddProperties(x => x.isSuccess, x => x.message)
-                    .AddProperty("returnCode",x=>0,"返回的执行结果代码",example:0)
-                    ;
-            }
-
-            return source.AddObject("returnData", x => x.Model);
-        }
-
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
-            this IObjectBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>,(bool isSuccess,int returnCode,string message)> resultFactory)
-        {
-            using (var f = source.FromObject(resultFactory))
-            {
-                f.AddProperties(x => x.isSuccess, x => x.message,x=>x.returnCode);
-            }
-
-            return source.AddObject("returnData", x => x.Model);
-        }
-
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
-            this IObjectBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>,ResultReturn> resultFactory)
-        {
-            using (var f = source.FromObject(resultFactory))
-            {
-                f.AddProperties(x => x.IsSuccess,x=>x.ReturnCode)
-                    .AddProperty("message",x=>x.Model.Message.IfEmptyOrWhileSpace(x.Model.Error?.Message??""),description:"结果文本消息");
-            }
-
-            return source.AddObject("returnData", x => x.Model);
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TModel,TElement>(this IObjectBuilder<TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
-            )
-        {
-            if (valueFactory==null)
-            {
-                throw new ArgumentNullException(nameof(valueFactory));
-            }
-
-            return builder.FromObject(valueFactory)
-                .AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount)
-                .AddArrayObject("Data", x => x.Model.GetData(), description: "数据内容");
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TElement>(
-            this IObjectBuilder<IPagedList<TElement>> builder)
-        {
-            return FromPagedList(builder, x => x.Model);
-        }
-        
-        public static IArrayBuilder<TElement> FromPagedList<TModel,TElement>(this IChildObjectBuilder<TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
-        )
-        {
-            if (valueFactory==null)
-            {
-                throw new ArgumentNullException(nameof(valueFactory));
-            }
-
-            return builder.FromObject(valueFactory)
-                .AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount)
-                .AddArrayObject("Data", x => x.Model.GetData(), description: "数据内容");
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TElement>(
-            this IChildObjectBuilder<IPagedList<TElement>> builder)
-        {
-            return FromPagedList(builder, x => x.Model);
-        }
     }
         
     public class Test<T1, T2>

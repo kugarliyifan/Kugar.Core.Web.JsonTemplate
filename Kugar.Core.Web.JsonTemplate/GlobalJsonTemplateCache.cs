@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Fasterflect;
+using Kugar.Core.Web.JsonTemplate.Builders;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -14,33 +17,28 @@ using NSwag.Generation.AspNetCore;
 
 namespace Kugar.Core.Web.JsonTemplate
 {
-    internal static class GlobalJsonTemplateCache
+    public static class GlobalJsonTemplateCache
     {
         private static ConcurrentDictionary<Type, object> _cache = new ConcurrentDictionary<Type, object>();
 
-        private static ConcurrentDictionary<Type,ConcurrentDictionary<Type,ConstructorInvoker>>
-            _cacheActionResultTypes = new ConcurrentDictionary<Type,ConcurrentDictionary<Type,ConstructorInvoker>>();
+        private static ConcurrentDictionary<Type, ConcurrentDictionary<Type, ConstructorInvoker>>
+            _cacheActionResultTypes = new ConcurrentDictionary<Type, ConcurrentDictionary<Type, ConstructorInvoker>>();
 
         public static IServiceProvider Provider { set; get; }
-        
-        public static IObjectBuilderPipe<TModel> GetTemplate<TModel>(Type builderType)
-            //where TBuilder : JsonTemplateObjectBase<TModel>, new()
+
+        public static IObjectBuilderPipe<TModel> GetTemplate<TBuilder, TModel>()
+            where TBuilder : JsonTemplateBase<TModel>, new()
         {
-            //var m= typeof(GlobalJsonTemplateCache)
-            //    .GetMethod("Build")
-            //    .MakeGenericMethod(builderType, typeof(TModel));
+            var builderType = typeof(TBuilder);
+
+            var objectBuilder = (IObjectBuilderPipe<TModel>)_cache.GetOrAdd(builderType, (type) =>
+              {
+                  var m = typeof(GlobalJsonTemplateCache)
+                      .GetMethod("Build")
+                      .MakeGenericMethod(builderType, typeof(TModel));
 
 
-            //return (IObjectBuilderPipe<TModel>)m.Invoke(null,new []{builderType,typeof(TModel)});
-
-            var objectBuilder=(IObjectBuilderPipe<TModel>)_cache.GetOrAdd(builderType, (type) =>
-            {
-                var m= typeof(GlobalJsonTemplateCache)
-                    .GetMethod("Build")
-                    .MakeGenericMethod(builderType, typeof(TModel));
-
-
-                return m.Invoke(null,new []{builderType,typeof(TModel)});
+                  return m.Invoke(null, new[] { builderType, typeof(TModel) });
                 // return Build<TBuilder, TModel>();
             });
 
@@ -49,29 +47,44 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static IObjectBuilderInfo GetTemplateInfo(Type builderType)
         {
-            var modelType = builderType.BaseType.GetGenericArguments().FirstOrDefault();
+            //此处代码用于防止传入的modelType无法构建Build的TModel泛型,比如定义的是 IEnumerable,但传入的modelType是Array的情况
+            var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>));
 
-            var objectBuilder=_cache.GetOrAdd(builderType, (type) =>
-            {
-                var m= typeof(GlobalJsonTemplateCache)
-                    .GetMethod("Build")
-                    .MakeGenericMethod(builderType, modelType);
+            var mtype = t.GetGenericArguments()[0];
+
+            var objectBuilder = _cache.GetOrAdd(builderType, (type) =>
+              {
+                  var m = typeof(GlobalJsonTemplateCache)
+                      .GetMethod("Build")
+                      .MakeGenericMethod(builderType, mtype);
 
 
-                return m.Invoke(null,new []{builderType,modelType});
-            });
+                  return m.Invoke(null, new[] { builderType, mtype });
+              });
 
-            return (IObjectBuilderInfo) objectBuilder;
+            return (IObjectBuilderInfo)objectBuilder;
         }
 
-        public static ConstructorInvoker GetActionResultType(Type builderType,Type modelType)
+        public static ConstructorInvoker GetActionResultType(Type builderType, Type modelType)
         {
             return _cacheActionResultTypes
                 .GetOrAdd(builderType, t => new ConcurrentDictionary<Type, ConstructorInvoker>())
                 .GetOrAdd(modelType, b =>
                 {
-                    var actionResultType = typeof(JsonTemplateActionResult<>).MakeGenericType(b);
+                    //此处代码用于防止传入的modelType无法构建JsonTemplateActionResult的TModel泛型,比如定义的是 IEnumerable,但传入的modelType是Array的情况
+                    var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>));
+                    var mtype = t.GetGenericArguments()[0];
 
+                    Type actionResultType = null;
+
+                    if (mtype==modelType)
+                    {
+                        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, modelType);    
+                    }
+                    else
+                    {
+                        actionResultType=typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, mtype);    
+                    }
                     return actionResultType.DelegateForCreateInstance(Flags.InstancePublic,
                         typeof(Type));
                 });
@@ -85,7 +98,29 @@ namespace Kugar.Core.Web.JsonTemplate
             //});
         }
 
-        public static IObjectBuilderPipe<TModel> Build<TBuilder,TModel>(Type builderType,Type modelType)  where TBuilder : JsonTemplateObjectBase<TModel>, new()
+        private static IEnumerable<Type> enumAllParentType(Type type)
+        {
+            var currentType = type.BaseType;
+
+            while (currentType!=null && currentType != typeof(object))
+            {
+                yield return currentType;
+                currentType = currentType.BaseType;
+            }
+        }
+
+        private static IEnumerable<Type> enumAllInterface(Type type)
+        {
+            var currentType = type.BaseType;
+
+            while (currentType!=null && currentType != typeof(object))
+            {
+                yield return currentType;
+                currentType = currentType.BaseType;
+            }
+        }
+
+        public static IObjectBuilderPipe<TModel> Build<TBuilder, TModel>(Type builderType, Type modelType) where TBuilder : JsonTemplateBase<TModel>, new()
         {
             var opt =
                 (IOptions<AspNetCoreOpenApiDocumentGeneratorSettings>)Provider.GetService(
@@ -101,7 +136,7 @@ namespace Kugar.Core.Web.JsonTemplate
             //var settings = new AspNetCoreOpenApiDocumentGeneratorSettings();
             var schemaResolver = new OpenApiSchemaResolver(document, opt.Value);
             var generator = g ?? new JsonSchemaGenerator(opt.Value);
-            
+
             DefaultContractResolver jsonResolver = null;
 
             var scheme = new JsonSchema();
@@ -124,7 +159,7 @@ namespace Kugar.Core.Web.JsonTemplate
 #endif
 
             var builder = new JsonTemplateObjectBuilder<TModel>(
-                new NSwagSchemeBuilder(scheme, s =>jsonResolver?.NamingStrategy?.GetPropertyName(s, false)??s),
+                new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
                 generator,
                 schemaResolver);
 
@@ -133,7 +168,7 @@ namespace Kugar.Core.Web.JsonTemplate
             builder.Start();
             b.BuildScheme(builder);
             builder.End();
-            
+
             return builder;
         }
     }
