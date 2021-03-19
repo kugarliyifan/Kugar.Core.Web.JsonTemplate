@@ -8,6 +8,10 @@ using Kugar.Core.Web.JsonTemplate.Helpers;
 
 namespace Kugar.Core.Web.JsonTemplate.Templates
 {
+    /// <summary>
+    /// 在输出的数据外层加多一个ResultReturn的头部,用于ReturnData为IEnumerable类型的时候使用
+    /// </summary>
+    /// <typeparam name="TModel">输入的ReturnData中数组内Item的类型</typeparam>
     public abstract  class WrapResultReturnArrayJsonTemplateBase<TModel> : JsonTemplateBase<IEnumerable<TModel>>
     {
         private static readonly ResultReturnArrayFactory<TModel>
@@ -19,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         }
 
         /// <summary>
-        /// 构建内层ReturnData属性内部的参数
+        /// 构建内层ReturnData属性数组Item内部的参数
         /// </summary>
         /// <param name="builder"></param>
         protected abstract void BuildReturnDataScheme(IArrayBuilder<TModel> builder);

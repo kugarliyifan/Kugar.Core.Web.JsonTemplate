@@ -8,9 +8,9 @@ using Kugar.Core.Web.JsonTemplate.Helpers;
 namespace Kugar.Core.Web.JsonTemplate.Templates
 {
     /// <summary>
-    /// 在输出的数据外层加多一个ResultReturn的头部
+    /// 在输出的数据外层加多一个ResultReturn的头部,用于在ReturnData为非数组类型的时候使用
     /// </summary>
-    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TModel">输入的ReturnData类型</typeparam>
     public abstract class WrapResultReturnJsonTemplateBase<TModel> : JsonTemplateBase<TModel>
     {
         private static readonly ResultReturnFactory<TModel>
@@ -44,7 +44,9 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         {
             return builder.FromReturnResult(context=>(ResultFactory??_defaultResultFactory).Invoke(context));
         }
+
+        public delegate ResultReturn ResultReturnFactory<in TModel>(IJsonTemplateBuilderContext<TModel> context);
     }
 
-    public delegate ResultReturn ResultReturnFactory<in TModel>(IJsonTemplateBuilderContext<TModel> context);
+    
 }
