@@ -53,6 +53,18 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).ToArrayEx());
 
         }
+
+        public async Task<IActionResult> Index4()
+        {
+            var t = new VM_PagedList<(Input input, AP ap)>(
+                Enumerable.Repeat(
+                    (new Input() {Ints = "222", Strr = 4}, new AP() {int2 = 4, str2 = "str2", str3 = "str3"}), 20),
+                pageSize:20,
+                totalCount: 200
+            );
+
+            return this.Json<Test3Template>(t);
+        }
     }
 
     public class Input
@@ -66,6 +78,21 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// sdfsdfsdf
         /// </summary>
         public int Strr { set;get; }
+    }
+
+    public class Test3Template : WrapResultReturnJsonTemplateBase<IPagedList<(Input input, AP ap)>>
+    {
+        protected override void BuildReturnDataScheme(IChildObjectBuilder<IPagedList<(Input input, AP ap)>> builder)
+        {
+            using (var b = builder.FromPagedList(x => x.Model))
+            {
+                b.AddProperties(x => x.input.Ints,
+                        x => x.input.Strr,
+                        x => x.ap.int2,
+                        x => x.ap.str2,
+                        x => x.ap.str3);
+            }
+        }
     }
 
 

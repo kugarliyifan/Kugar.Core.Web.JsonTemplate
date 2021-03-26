@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Kugar.Core.ExtMethod;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
@@ -22,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory,
             bool isNull = false,
             string description = "",
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
             Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null
         );
 
@@ -56,6 +57,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         //private IList<PipeActionBuilder<TChildModel>> _changeTypeParent = null;
         private Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> _childObjFactory;
         private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifNullRender = null;
+        //private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifCheckExp = null;
 
         public ChildJsonTemplateObjectBuilder(IObjectBuilderPipe<TParentModel> parent,
             Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> childObjFactory,
@@ -63,12 +65,14 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver,
             bool isNewObject,
+            //Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp=null,
             Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifNullRender = null) //: base(schemeBuilder, generator, resolver)
         {
             _parent = parent;
             _childObjFactory = childObjFactory;
             _ifNullRender = ifNullRender;
             _isNewObject = isNewObject;
+            //_ifCheckExp = ifCheckExp;
             this.SchemaBuilder = schemeBuilder;
             this.Generator = generator;
             this.Resolver = resolver;
@@ -118,6 +122,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory, 
             bool isNull = false,
             string description = "", 
+            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
             Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
@@ -129,6 +134,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
+                //if (!(ifCheckExp?.Invoke(new JsonTemplateBuilderContext<TNewChildModel>(context.HttpContext,valueFactory(context)))??true))
+                //{
+                //    return;
+                //}
+
                 await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
             });
 
@@ -139,7 +149,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 childSchemeBuilder,
                 Generator,
                 Resolver,
-                true,ifNullRender).Start();
+                isNewObject:true, ifNullRender: ifNullRender).Start();
         }
 
         public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
@@ -176,12 +186,15 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
 
                 var data = valueFactory(context);
-
+                
                 await writer.WriteStartArrayAsync();
 
-                foreach (var value in data)
+                if (data.HasData())
                 {
-                    await writer.WriteValueAsync(value);
+                    foreach (var value in data)
+                    {
+                        await writer.WriteValueAsync(value);
+                    }
                 }
 
                 await writer.WriteEndArrayAsync();
@@ -196,7 +209,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             if (_isNewObject)
             {
-                _pipe.Add((async (writer, context) => await writer.WriteStartObjectAsync()));
+                _pipe.Add((async (writer, context) =>
+                {
+                    //if (!(_ifCheckExp?.Invoke(context) ?? true))
+                    //{
+                    //    context.TemporaryData.AddOrUpdate("ifCheck", false);
+                    //    return;
+                    //}
+
+                    await writer.WriteStartObjectAsync();
+                }));
             }
 
             return this;
@@ -211,6 +233,14 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             
             _parent.Pipe.Add(async (writer, context) =>
             {
+                if (context.TemporaryData.TryGetValue("ifCheck",out var t))
+                {
+                    if (!(bool)t)
+                    {
+                        return;
+                    }
+                }
+
                 var value = _childObjFactory(context);
 
                 var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, value);

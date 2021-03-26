@@ -70,9 +70,13 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(valueFactory));
             }
 
-            return builder.FromObject(valueFactory)
-                .AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount)
-                .AddArrayObject("Data", x => x.Model.GetData(), description: "数据内容");
+            using (var b=builder.FromObject(valueFactory))
+            {
+                b.AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount);
+            }
+            
+                
+            return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
         }
 
         public static IArrayBuilder<TElement> FromPagedList<TElement>(
@@ -90,9 +94,13 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(valueFactory));
             }
 
-            return builder.FromObject(valueFactory)
-                .AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount)
-                .AddArrayObject("Data", x => x.Model.GetData(), description: "数据内容");
+            using (var b=builder.FromObject(valueFactory))
+            {
+                b.AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount);
+            }
+            
+                
+            return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
         }
 
         public static IArrayBuilder<TElement> FromPagedList<TElement>(

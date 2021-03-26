@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Kugar.Core.ExtMethod;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
@@ -132,8 +133,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <typeparam name="TChildModel"></typeparam>
         /// <param name="propertyName"></param>
         /// <param name="valueFactory"></param>
-        /// <param name="isNull"></param>
-        /// <param name="description"></param>
+        /// <param name="isNull">是否允许为null</param>
+        /// <param name="description">备注</param>
+        /// <param name="ifCheckExp">是否输出该属性</param>
         /// <param name="ifNullRender">如果值为null,是否继续调用输出,为true时,继续调用各种参数回调,,为false时,直接输出null</param>
         /// <returns></returns>
         public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
@@ -163,8 +165,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 childSchemeBuilder,
                 Generator,
                 Resolver,
-                true,
-                ifNullRender).Start();
+                isNewObject: true,
+                //ifCheckExp:ifCheckExp,
+                ifNullRender:ifNullRender).Start();
         }
 
         public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(
@@ -208,9 +211,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                foreach (var value in data)
+                if (data.HasData())
                 {
-                    await writer.WriteValueAsync(value,context.CancellationToken);
+                    foreach (var value in data)
+                    {
+                        await writer.WriteValueAsync(value,context.CancellationToken);
+                    }
                 }
 
                 await writer.WriteEndArrayAsync(context.CancellationToken);

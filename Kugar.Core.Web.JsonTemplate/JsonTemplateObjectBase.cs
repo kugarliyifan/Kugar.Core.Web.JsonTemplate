@@ -1,9 +1,11 @@
-﻿using Kugar.Core.Web.JsonTemplate.Builders;
+﻿using System;
+using Kugar.Core.Web.JsonTemplate.Builders;
 
 namespace Kugar.Core.Web.JsonTemplate
 {
     public interface IJsonTemplateObject 
     { 
+        Type ModelType { get; }
     }
 
     /// <summary>
@@ -14,6 +16,6 @@ namespace Kugar.Core.Web.JsonTemplate
     {
         public abstract void BuildScheme(IObjectBuilder<TModel> builder);
 
-        public object ModelType => typeof(TModel);
+        public Type ModelType => typeof(TModel);
     }
 }

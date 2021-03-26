@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -49,6 +50,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 jsonSettings = JsonConvert.DefaultSettings?.Invoke();
             }
 
+            //Debugger.Break();
 
             using (var textWriter = new StreamWriter(context.HttpContext.Response.Body))
             using (var jsonWriter = new JsonTextWriter(textWriter))

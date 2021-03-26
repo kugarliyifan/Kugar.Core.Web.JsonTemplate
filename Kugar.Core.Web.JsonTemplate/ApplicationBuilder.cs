@@ -25,7 +25,7 @@ using NSwag.Generation.Processors.Contexts;
 
 namespace Kugar.Core.Web.JsonTemplate
 {
-    public static class ApplicationBuilder
+    public static class ApplicationBuilderExtMethod
     {
         public static void AddJsonTemplateV2(this AspNetCoreOpenApiDocumentGeneratorSettings opt,
             params Assembly[] typeAssemblies)

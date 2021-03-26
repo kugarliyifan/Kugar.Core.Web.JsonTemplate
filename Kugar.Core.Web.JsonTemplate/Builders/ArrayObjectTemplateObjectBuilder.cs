@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Kugar.Core.ExtMethod;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
@@ -136,20 +137,23 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.Model));
 
-                foreach (var element in array)
+                if (array.HasData())
                 {
-                    await writer.WriteStartObjectAsync(context.CancellationToken);
-
-                    var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, element);
-
-                    foreach (var func in _pipe)
+                    foreach (var element in array)
                     {
-                        await func(writer, newContext);
+                        await writer.WriteStartObjectAsync(context.CancellationToken);
+
+                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, element);
+
+                        foreach (var func in _pipe)
+                        {
+                            await func(writer, newContext);
+                        }
+
+                        await writer.WriteEndObjectAsync(context.CancellationToken);
                     }
-
-                    await writer.WriteEndObjectAsync(context.CancellationToken);
                 }
-
+                
                 await writer.WriteEndArrayAsync(context.CancellationToken);
             });
 

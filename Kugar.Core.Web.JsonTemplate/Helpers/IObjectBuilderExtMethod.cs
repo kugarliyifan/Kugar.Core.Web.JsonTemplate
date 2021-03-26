@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
+using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Builders;
+using Newtonsoft.Json.Linq;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers
 {
@@ -33,6 +35,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return builder.AddProperty(propertyName, (context) => invoker(context.Model), description, isNull, example,typeof(TValue),
                 ifCheckExp);
         }
+         
 
         public static IObjectBuilder<TModel> AddProperties<TModel>(
             this IObjectBuilder<TModel> builder,
@@ -62,8 +65,26 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
         )
         {
-            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
+            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
                 objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
+        }
+
+        public static IObjectBuilder<TModel> FromWechatPayProperties<TModel>(this IObjectBuilder<TModel> builder,
+            Func<IJsonTemplateBuilderContext<TModel>, JObject> objectFactory)
+        {
+            using (var b=builder.FromObject(objectFactory))
+            {
+                b.AddProperty("appId",x=>x.Model.GetString("appId","",StringComparison.CurrentCultureIgnoreCase),"公众号/小程序的AppId")
+                    .AddProperty("timeStamp",x=>x.Model.GetString("timeStamp","",StringComparison.CurrentCultureIgnoreCase),"支付时间戳")
+                    .AddProperty("nonceStr",x=>x.Model.GetString("nonceStr","",StringComparison.CurrentCultureIgnoreCase),"")
+                    .AddProperty("package",x=>x.Model.GetString("package","",StringComparison.CurrentCultureIgnoreCase),"")
+                    .AddProperty("signType",x=>x.Model.GetString("signType","",StringComparison.CurrentCultureIgnoreCase),"签名类型")
+                    .AddProperty("paySign",x=>x.Model.GetString("paySign","",StringComparison.CurrentCultureIgnoreCase),"签名")
+                    .AddProperty("total_fee",x=>x.Model.GetString("total_fee","",StringComparison.CurrentCultureIgnoreCase),"支付金额",ifCheckExp:x=>x.Model.ContainsKey("total_fee"))
+                    ;
+            }
+
+            return builder;
         }
     }
 }
