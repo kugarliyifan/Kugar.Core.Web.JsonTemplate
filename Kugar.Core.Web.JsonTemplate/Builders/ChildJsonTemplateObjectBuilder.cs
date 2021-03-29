@@ -242,7 +242,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     await writer.WriteStartObjectAsync(context.CancellationToken);
                 }
                 
-                var c=(JsonTemplateBuilderContext<TCurrentModel>)context;
+                var c=(JsonTemplateBuilderContext<TParentModel>)context;
 
                 var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, value,context.JsonSerializerSettings,c._globalTemporaryData);
 

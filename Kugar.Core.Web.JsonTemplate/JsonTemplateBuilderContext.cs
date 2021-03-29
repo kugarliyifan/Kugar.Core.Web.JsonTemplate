@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace Kugar.Core.Web.JsonTemplate
 {
-    public interface IJsonTemplateBuilderContext<out TModel>
+    public interface IJsonTemplateBuilderContext
     {
         /// <summary>
         /// 当前请求的HttpContext
@@ -26,10 +26,7 @@ namespace Kugar.Core.Web.JsonTemplate
         /// </summary>
         Dictionary<string, object>  GlobalTemporaryData { get; }
 
-        /// <summary>
-        /// 传入的Model数据
-        /// </summary>
-        TModel Model { get; }
+       
 
         /// <summary>
         /// Request上的RequestAborted通知
@@ -39,6 +36,14 @@ namespace Kugar.Core.Web.JsonTemplate
         JsonSerializerSettings JsonSerializerSettings { get; }
         
         ILogger Logger { get; }
+    }
+
+    public interface IJsonTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext
+    {
+        /// <summary>
+        /// 传入的Model数据
+        /// </summary>
+        TModel Model { get; }
     }
 
     public interface IJsonArrayTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext<TModel>

@@ -46,9 +46,9 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             //var p=GlobalJsonTemplateCache.Build<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3),
             //    typeof(System.Collections.Generic.IEnumerable<AP>));
 
-            var b = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
+            //var b = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
 
-            var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
+            //var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
 
             return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).ToArrayEx());
 

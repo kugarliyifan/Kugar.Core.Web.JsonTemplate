@@ -31,7 +31,7 @@ namespace Kugar.Core.Web.JsonTemplate.UnitTest
             {
                 var client= _server.CreateClient();
 
-                var response = await client.GetAsync("api/home/index4");
+                var response = await client.GetAsync("/api/home/index4");
                 response.EnsureSuccessStatusCode();
 
                 var result = await response.Content.ReadAsStringAsync();
