@@ -14,8 +14,15 @@ namespace Kugar.Core.Web.JsonTemplate
     /// <typeparam name="TModel"></typeparam>
     public abstract class JsonTemplateBase<TModel> :IJsonTemplateObject
     {
+        /// <summary>
+        /// 构建属性的输出,builder一定不要使用using
+        /// </summary>
+        /// <param name="builder">属性构建器,,一定不要对builder使用using</param>
         public abstract void BuildScheme(IObjectBuilder<TModel> builder);
 
+        /// <summary>
+        /// 当前的模型类型
+        /// </summary>
         public Type ModelType => typeof(TModel);
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Kugar.Core.ExtMethod;
+using Microsoft.Extensions.Logging;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
@@ -92,21 +93,29 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     return;
                 }
-
-                Console.WriteLine("输出属性:" + propertyName);
-
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-
-                var value = valueFactory(context);
-
-                if (value != null)
+                
+                try
                 {
-                    await writer.WriteValueAsync(value, context.CancellationToken);
+                    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+
+                    var value = valueFactory(context);
+
+                    if (value != null)
+                    {
+                        await writer.WriteValueAsync(value, context.CancellationToken);
+                    }
+                    else
+                    {
+                        await writer.WriteNullAsync(context.CancellationToken);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    await writer.WriteNullAsync(context.CancellationToken);
+                    context.Logger?.Log(LogLevel.Error,e,$"输出参数错误:{propertyName}");
+                    throw;
                 }
+
+                
 
             });
 
@@ -243,7 +252,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 var value = _childObjFactory(context);
 
-                var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, value);
+                var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, value,context.JsonSerializerSettings);
 
                 if (value == null && _ifNullRender != null)
                 {

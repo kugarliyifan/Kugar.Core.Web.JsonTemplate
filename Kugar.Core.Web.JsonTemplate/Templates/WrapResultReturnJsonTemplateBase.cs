@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         }
 
         /// <summary>
-        /// 构建内层ReturnData属性内部的参数
+        /// 构建内层ReturnData属性内部的参数,对builder参数不要使用using
         /// </summary>
         /// <param name="builder"></param>
         protected abstract void BuildReturnDataScheme(IChildObjectBuilder<TModel> builder);

@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Kugar.Core.ExtMethod;
 using NJsonSchema;
+using NJsonSchema.Annotations;
 using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IArrayBuilder<out TElement> : IDisposable
+    public interface IArrayBuilder<TElement> : IObjectBuilderInfo,IObjectBuilderPipe<TElement>,IDisposable
     {
         IArrayBuilder<TElement> AddProperty<TValue>(
-            string propertyName,
-            Func<IJsonTemplateBuilderContext<TElement>, TValue> valueFactory,
+            [Required]string propertyName,
+            [Required]Func<IJsonTemplateBuilderContext<TElement>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
@@ -19,8 +21,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TElement>, bool> ifCheckExp = null
         );
 
-        IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TElement>, TChildModel> valueFactory,
+        IChildObjectBuilder<TChildModel> AddObject<TChildModel>(
+            [Required]string propertyName,
+            [Required]Func<IJsonTemplateBuilderContext<TElement>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
@@ -38,7 +41,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public ArrayObjectTemplateObjectBuilder(
             IObjectBuilderPipe<TParentModel> parent,
-            Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
+            [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver
@@ -135,7 +138,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.Model));
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.Model,context.JsonSerializerSettings));
 
                 if (array.HasData())
                 {
@@ -143,7 +146,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     {
                         await writer.WriteStartObjectAsync(context.CancellationToken);
 
-                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, element);
+                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, element,context.JsonSerializerSettings);
 
                         foreach (var func in _pipe)
                         {
@@ -167,10 +170,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public IList<PipeActionBuilder<TElementModel>> Pipe => _pipe;
 
-        protected internal NSwagSchemeBuilder SchemaBuilder { get; set; }
+        public  NSwagSchemeBuilder SchemaBuilder { get;}
 
-        protected JsonSchemaGenerator Generator { get; set; }
+        public JsonSchemaGenerator Generator { get;}
 
-        protected JsonSchemaResolver Resolver { get; set; }
+        public JsonSchemaResolver Resolver { get;  }
+
+        public Type ModelType { get; } = typeof(TElementModel);
     }
 }

@@ -2,8 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Log;
+using Microsoft.Extensions.Logging;
 using NJsonSchema;
 using NJsonSchema.Generation;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
@@ -103,20 +106,28 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     return;
                 }
+
+                try
+                {
+                    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+
+                    var value = valueFactory(context);
+
+                    if (value != null)
+                    {
+                        await writer.WriteValueAsync(value, context.CancellationToken);
+                    }
+                    else
+                    {
+                        await writer.WriteNullAsync(context.CancellationToken);
+                    }
+                }
+                catch (Exception e)
+                {
+                    context.Logger?.Log(LogLevel.Error,e,$"输出参数错误:{propertyName}");
+                    throw;
+                }
                 
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-
-                var value = valueFactory(context);
-
-                if (value != null)
-                {
-                    await writer.WriteValueAsync(value, context.CancellationToken);
-                }
-                else
-                {
-                    await writer.WriteNullAsync(context.CancellationToken);
-                }
-
             });
 
             JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
@@ -128,14 +139,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
 
         /// <summary>
-        /// 
+        /// 添加一个object属性
         /// </summary>
-        /// <typeparam name="TChildModel"></typeparam>
-        /// <param name="propertyName"></param>
-        /// <param name="valueFactory"></param>
+        /// <typeparam name="TChildModel">子对象的类型</typeparam>
+        /// <param name="propertyName">新增的属性名</param>
+        /// <param name="valueFactory">获取值的方法</param>
         /// <param name="isNull">是否允许为null</param>
         /// <param name="description">备注</param>
-        /// <param name="ifCheckExp">是否输出该属性</param>
         /// <param name="ifNullRender">如果值为null,是否继续调用输出,为true时,继续调用各种参数回调,,为false时,直接输出null</param>
         /// <returns></returns>
         public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
@@ -170,6 +180,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 ifNullRender:ifNullRender).Start();
         }
 
+        /// <summary>
+        /// 新增一个数组对象属性
+        /// </summary>
+        /// <typeparam name="TArrayElement">数组中每个对象的类型</typeparam>
+        /// <param name="propertyName">新增的属性名</param>
+        /// <param name="valueFactory">获取值的方法</param>
+        /// <param name="isNull">是否允许为null</param>
+        /// <param name="description">备注</param>
+        /// <param name="ifNullRender">如果值为null,是否继续调用输出,为true时,继续调用各种参数回调,,为false时,直接输出null</param>
+        /// <returns></returns>
         public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(
             string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
@@ -198,6 +218,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return s;
         }
 
+        /// <summary>
+        /// 新增一个非对象数组的属性,如int[],string[] 等
+        /// </summary>
+        /// <typeparam name="TArrayElement">数组中每个值的类型</typeparam>
+        /// <param name="propertyName">新增的属性名</param>
+        /// <param name="valueFactory">获取值的方法</param>
+        /// <param name="isNull">是否允许为null</param>
+        /// <param name="description">备注</param>
+        /// <param name="ifNullRender">如果值为null,是否输出该属性,为true时,输出该属性,并且值为null,,为false时,不输出该属性,直接跳过</param>
+        /// <returns></returns>
         public IObjectBuilder<TModel> AddArrayValue<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
             string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null)
         {
@@ -205,21 +235,34 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-
                 var data = valueFactory(context);
 
-                await writer.WriteStartArrayAsync(context.CancellationToken);
+                var isRenderNull = true;
 
-                if (data.HasData())
+                if (!data.HasData())
                 {
-                    foreach (var value in data)
-                    {
-                        await writer.WriteValueAsync(value,context.CancellationToken);
-                    }
+                    isRenderNull =
+                        ifNullRender?.Invoke(
+                            new JsonTemplateBuilderContext<IEnumerable<TArrayElement>>(context.HttpContext, null,
+                                context.JsonSerializerSettings)) ?? true;
                 }
 
-                await writer.WriteEndArrayAsync(context.CancellationToken);
+                if (data.HasData() || isRenderNull)
+                {
+                    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+                
+                    await writer.WriteStartArrayAsync(context.CancellationToken);
+
+                    if (data.HasData())
+                    {
+                        foreach (var value in data)
+                        {
+                            await writer.WriteValueAsync(value,context.CancellationToken);
+                        }
+                    }
+
+                    await writer.WriteEndArrayAsync(context.CancellationToken);
+                }
             });
 
             SchemaBuilder.AddValueArray(propertyName,NSwagSchemeBuilder.NetTypeToJsonObjectType(typeof(TArrayElement)), description, isNull);
@@ -232,7 +275,6 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             _pipe.Add(async (writer, context) =>
             {
-                
                 await writer.WriteStartObjectAsync(context.CancellationToken);
             });
 

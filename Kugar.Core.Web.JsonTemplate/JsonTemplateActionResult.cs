@@ -22,7 +22,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
     }
 
-    public class JsonTemplateActionResult<TBuilder,TModel> : IJsonTemplateActionResult<TBuilder,TModel> where TBuilder : JsonTemplateBase<TModel>, new()
+    internal class JsonTemplateActionResult<TBuilder,TModel> : IJsonTemplateActionResult<TBuilder,TModel> where TBuilder : JsonTemplateBase<TModel>, new()
     {
         private Type _builderType = null;
 
@@ -49,9 +49,7 @@ namespace Kugar.Core.Web.JsonTemplate
             {
                 jsonSettings = JsonConvert.DefaultSettings?.Invoke();
             }
-
-            //Debugger.Break();
-
+            
             using (var textWriter = new StreamWriter(context.HttpContext.Response.Body))
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
@@ -59,16 +57,27 @@ namespace Kugar.Core.Web.JsonTemplate
                 jsonWriter.DateFormatString = jsonSettings?.DateFormatString??"yyyy-MM-dd HH:mm:ss";
                 jsonWriter.DateFormatHandling = jsonSettings?.DateFormatHandling?? DateFormatHandling.IsoDateFormat;
                 jsonWriter.Culture = jsonSettings?.Culture??CultureInfo.CurrentUICulture;
-
+                jsonWriter.DateTimeZoneHandling = jsonSettings?.DateTimeZoneHandling??DateTimeZoneHandling.Local;
+                jsonWriter.FloatFormatHandling = jsonSettings?.FloatFormatHandling??FloatFormatHandling.String;
+                
                 var objectBuilder=GlobalJsonTemplateCache.GetTemplate<TBuilder, TModel>();
 
                 var model = (TModel) Model;
 
-                var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext, model);
+                var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext, model,jsonSettings);
 
                 foreach (var pipe in objectBuilder.Pipe)
                 {
-                    await pipe(jsonWriter,modelContext );
+                    try
+                    {
+                        await pipe(jsonWriter,modelContext );
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                    
                 }
 
                 await jsonWriter.FlushAsync(context.HttpContext.RequestAborted);
