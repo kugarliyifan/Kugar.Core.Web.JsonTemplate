@@ -30,6 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate
         public static void AddJsonTemplateV2(this AspNetCoreOpenApiDocumentGeneratorSettings opt,
             params Assembly[] typeAssemblies)
         {
+
             var types = typeAssemblies.SelectMany(x => x.GetTypes())
                 .Where(x => x.IsImplementlInterface(typeof(IJsonTemplateObject)) && !x.IsAbstract &&
                             x.IsPublic)
@@ -46,9 +47,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 opt.TypeMappers.Add(new ObjectTypeMapper(t, (gen, resolver) =>
                 {
                     var builder = GlobalJsonTemplateCache.GetTemplateInfo(t);
-
                     
-
                     return builder.SchemaBuilder.Schema;
 
                 }));

@@ -32,6 +32,8 @@ namespace Kugar.Core.Web.JsonTemplate.Test
 
             //services.EnableSyncIO();
 
+            services.AddOptions<JsonTemplateOption>();
+
             services.AddSwaggerDocument(opt =>
             {
                 //opt.DocumentName = "api";

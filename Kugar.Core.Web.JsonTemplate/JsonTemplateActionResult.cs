@@ -63,7 +63,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 var objectBuilder=GlobalJsonTemplateCache.GetTemplate<TBuilder, TModel>();
 
                 var model = (TModel) Model;
-
+                 
                 var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext, model,jsonSettings);
 
                 foreach (var pipe in objectBuilder.Pipe)

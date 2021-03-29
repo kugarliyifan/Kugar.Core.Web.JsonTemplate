@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -15,9 +16,15 @@ namespace Kugar.Core.Web.JsonTemplate
         Microsoft.AspNetCore.Http.HttpContext HttpContext { get; }
 
         /// <summary>
-        /// 本次输出的临时数据
+        /// 本次输出范围内的临时数据,ChildObject则为子对象整个输出的范围内,,如果是ObjecrArray则为整个数组对象的输出范围内
         /// </summary>
-        Dictionary<string, object> TemporaryData { get; }
+        Dictionary<string, object> ScopeTemporaryData { get; }
+        
+
+        /// <summary>
+        /// 单个Request输出的范围内的临时数据
+        /// </summary>
+        Dictionary<string, object>  GlobalTemporaryData { get; }
 
         /// <summary>
         /// 传入的Model数据
@@ -37,28 +44,33 @@ namespace Kugar.Core.Web.JsonTemplate
     public interface IJsonArrayTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext<TModel>
     {
         /// <summary>
-        /// 单次循环中的临时数据
+        /// 在ArrayObject单次循环中的临时数据
         /// </summary>
-        Dictionary<string,object> LoopTemporaryData { get; }
+        Dictionary<string,object> LoopItemTemporaryData { get; }
     }
 
     internal class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
     {
         private Lazy<Dictionary<string, object>> _temporaryData = new Lazy<Dictionary<string, object>>();
+        internal Lazy<Dictionary<string, object>> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(HttpContext context, TModel model,JsonSerializerSettings settings)
+        public JsonTemplateBuilderContext(HttpContext context, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
             JsonSerializerSettings = settings;
             _loggerFactory = new Lazy<ILogger>(getLogger);
+            _globalTemporaryData = globalTemporaryDataFactory ?? new Lazy<Dictionary<string, object>>();
+            //GlobalScopeData = new ExpandoObject();
             //CancellationToken = context.RequestAborted;
         }
 
         public HttpContext HttpContext { get; }
 
-        public Dictionary<string, object> TemporaryData => _temporaryData.Value;
+        public Dictionary<string, object> ScopeTemporaryData => _temporaryData.Value;
+
+        public Dictionary<string, object> GlobalTemporaryData => _globalTemporaryData.Value;
 
         public TModel Model { get; }
 
@@ -84,6 +96,6 @@ namespace Kugar.Core.Web.JsonTemplate
         {
         }
 
-        public Dictionary<string, object> LoopTemporaryData => _loopTemporaryData.Value;
+        public Dictionary<string, object> LoopItemTemporaryData => _loopTemporaryData.Value;
     }
 }

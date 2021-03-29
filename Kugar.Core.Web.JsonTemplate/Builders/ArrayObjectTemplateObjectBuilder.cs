@@ -126,8 +126,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 childSchemeBuilder,
                 Generator,
                 Resolver,
-                true,
-                ifNullRender).Start();
+                true).Start();
         }
 
 
