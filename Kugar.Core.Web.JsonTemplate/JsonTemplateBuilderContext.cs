@@ -44,9 +44,11 @@ namespace Kugar.Core.Web.JsonTemplate
         /// 传入的Model数据
         /// </summary>
         TModel Model { get; }
+
+        object RootModel { get; }
     }
 
-    public interface IJsonArrayTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext<TModel>
+    public interface IJsonArrayTemplateBuilderContext<out TRootModel,out TModel>:IJsonTemplateBuilderContext<TModel>
     {
         /// <summary>
         /// 在ArrayObject单次循环中的临时数据
@@ -60,13 +62,14 @@ namespace Kugar.Core.Web.JsonTemplate
         internal Lazy<Dictionary<string, object>> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(HttpContext context, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
+        public JsonTemplateBuilderContext(HttpContext context,object rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
             JsonSerializerSettings = settings;
             _loggerFactory = new Lazy<ILogger>(getLogger);
             _globalTemporaryData = globalTemporaryDataFactory ?? new Lazy<Dictionary<string, object>>();
+            RootModel = rootModel;
             //GlobalScopeData = new ExpandoObject();
             //CancellationToken = context.RequestAborted;
         }
@@ -78,6 +81,8 @@ namespace Kugar.Core.Web.JsonTemplate
         public Dictionary<string, object> GlobalTemporaryData => _globalTemporaryData.Value;
 
         public TModel Model { get; }
+
+        public object RootModel { get; }
 
         public CancellationToken CancellationToken => HttpContext.RequestAborted;
 
@@ -91,16 +96,16 @@ namespace Kugar.Core.Web.JsonTemplate
 
     }
 
-    internal class JsonArrayTemplateBuilderContext<TModel> : JsonTemplateBuilderContext<TModel>,
-        IJsonArrayTemplateBuilderContext<TModel>
-    {
-        private Lazy<Dictionary<string, object>> _loopTemporaryData = new Lazy<Dictionary<string, object>>();
+    //internal class JsonArrayTemplateBuilderContext<TModel> : JsonTemplateBuilderContext<TModel>,
+    //    IJsonArrayTemplateBuilderContext<TModel>
+    //{
+    //    private Lazy<Dictionary<string, object>> _loopTemporaryData = new Lazy<Dictionary<string, object>>();
 
 
-        public JsonArrayTemplateBuilderContext(HttpContext context, TModel model,JsonSerializerSettings settings) : base(context, model,settings)
-        {
-        }
+    //    public JsonArrayTemplateBuilderContext(HttpContext context, TModel model,JsonSerializerSettings settings) : base(context, model,settings)
+    //    {
+    //    }
 
-        public Dictionary<string, object> LoopItemTemporaryData => _loopTemporaryData.Value;
-    }
+    //    public Dictionary<string, object> LoopItemTemporaryData => _loopTemporaryData.Value;
+    //}
 }

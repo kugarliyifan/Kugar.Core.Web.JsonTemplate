@@ -30,6 +30,15 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
         );
 
+        IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TElement>, IEnumerable<TArrayNewElement>> valueFactory,
+            bool isNull = false,
+            string description = ""//,
+            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
+        );
+
+
         IArrayBuilder<TElement> End();
     }
 
@@ -129,6 +138,29 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 true).Start();
         }
 
+        public IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName, Func<IJsonTemplateBuilderContext<TElementModel>, IEnumerable<TArrayNewElement>> valueFactory, bool isNull = false,
+            string description = "")
+        {
+            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
+
+            if (!string.IsNullOrWhiteSpace(propertyName))
+            {
+                _pipe.Add(async (writer, model) =>
+                {
+                    await writer.WritePropertyNameAsync(propertyName, model.CancellationToken);
+                });
+            }
+            else
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
+
+            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver);
+
+            return s;
+        }
 
 
         public IArrayBuilder<TElementModel> End()
@@ -137,7 +169,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.Model,context.JsonSerializerSettings));
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings));
 
                 if (array.HasData())
                 {
@@ -145,7 +177,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     {
                         await writer.WriteStartObjectAsync(context.CancellationToken);
 
-                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, element,context.JsonSerializerSettings);
+                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings);
 
                         foreach (var func in _pipe)
                         {

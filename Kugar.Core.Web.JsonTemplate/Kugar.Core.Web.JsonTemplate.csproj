@@ -4,7 +4,7 @@
 		<TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
 		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.0.0.7</Version>
+		<Version>1.0.0.9</Version>
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
