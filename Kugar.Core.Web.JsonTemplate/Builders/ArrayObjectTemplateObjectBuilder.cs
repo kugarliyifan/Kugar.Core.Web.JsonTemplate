@@ -9,29 +9,29 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IArrayBuilder<TElement> : IObjectBuilderInfo,IObjectBuilderPipe<TElement>,IDisposable
+    public interface IArrayBuilder<TRootModel,TElement> : IObjectBuilderInfo,IObjectBuilderPipe<TRootModel,TElement>,IDisposable
     {
-        IArrayBuilder<TElement> AddProperty<TValue>(
+        IArrayBuilder<TRootModel,TElement> AddProperty<TValue>(
             [Required]string propertyName,
-            [Required]Func<IJsonTemplateBuilderContext<TElement>, TValue> valueFactory,
+            [Required]Func<IJsonTemplateBuilderContext<TRootModel,TElement>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
             Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TElement>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TElement>, bool> ifCheckExp = null
         );
 
-        IChildObjectBuilder<TChildModel> AddObject<TChildModel>(
+        IChildObjectBuilder<TRootModel,TChildModel> AddObject<TChildModel>(
             [Required]string propertyName,
-            [Required]Func<IJsonTemplateBuilderContext<TElement>, TChildModel> valueFactory,
+            [Required]Func<IJsonTemplateBuilderContext<TRootModel,TElement>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TChildModel>, bool> ifNullRender = null
         );
 
-        IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TElement>, IEnumerable<TArrayNewElement>> valueFactory,
+        IArrayBuilder<TRootModel,TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TElement>, IEnumerable<TArrayNewElement>> valueFactory,
             bool isNull = false,
             string description = ""//,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
@@ -39,18 +39,18 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         );
 
 
-        IArrayBuilder<TElement> End();
+        IArrayBuilder<TRootModel,TElement> End();
     }
 
-    internal class ArrayObjectTemplateObjectBuilder<TParentModel, TElementModel> : IArrayBuilder<TElementModel>,IObjectBuilderPipe<TElementModel>
+    internal class ArrayObjectTemplateObjectBuilder<TRootModel,TParentModel, TElementModel> : IArrayBuilder<TRootModel,TElementModel>,IObjectBuilderPipe<TRootModel,TElementModel>
     {
-        private List<PipeActionBuilder<TElementModel>> _pipe = new List<PipeActionBuilder<TElementModel>>();
-        private Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
-        private IList<PipeActionBuilder<TParentModel>> _parent = null;
+        private List<PipeActionBuilder<TRootModel,TElementModel>> _pipe = new List<PipeActionBuilder<TRootModel,TElementModel>>();
+        private Func<IJsonTemplateBuilderContext<TRootModel,TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
+        private IList<PipeActionBuilder<TRootModel,TParentModel>> _parent = null;
 
         public ArrayObjectTemplateObjectBuilder(
-            IObjectBuilderPipe<TParentModel> parent,
-            [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
+            IObjectBuilderPipe<TRootModel,TParentModel> parent,
+            [Required]Func<IJsonTemplateBuilderContext<TRootModel,TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver
@@ -66,13 +66,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
 
 
-        public IArrayBuilder<TElementModel> AddProperty<TValue>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TElementModel>, TValue> valueFactory,
+        public IArrayBuilder<TRootModel,TElementModel> AddProperty<TValue>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TElementModel>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
             Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TElementModel>, bool> ifCheckExp = null)
+            Func<IJsonTemplateBuilderContext<TRootModel,TElementModel>, bool> ifCheckExp = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -110,11 +110,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName, 
-            Func<IJsonTemplateBuilderContext<TElementModel>, TChildModel> valueFactory, 
+        public IChildObjectBuilder<TRootModel,TChildModel> AddObject<TChildModel>(string propertyName, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TElementModel>, TChildModel> valueFactory, 
             bool isNull = false,
             string description = "", 
-            Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null)
+            Func<IJsonTemplateBuilderContext<TRootModel,TChildModel>, bool> ifNullRender = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -130,7 +130,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TElementModel, TChildModel>(this,
+            return (IChildObjectBuilder<TRootModel,TChildModel>)new ChildJsonTemplateObjectBuilder<TRootModel,TElementModel, TChildModel>(this,
                 valueFactory,
                 childSchemeBuilder,
                 Generator,
@@ -138,7 +138,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 true).Start();
         }
 
-        public IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName, Func<IJsonTemplateBuilderContext<TElementModel>, IEnumerable<TArrayNewElement>> valueFactory, bool isNull = false,
+        public IArrayBuilder<TRootModel,TArrayNewElement> AddArrayObject<TArrayNewElement>(
+            string propertyName, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TElementModel>, IEnumerable<TArrayNewElement>> valueFactory, 
+            bool isNull = false,
             string description = "")
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
@@ -157,19 +160,19 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver);
+            var s = new ArrayObjectTemplateObjectBuilder<TRootModel,TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver);
 
             return s;
         }
 
 
-        public IArrayBuilder<TElementModel> End()
+        public IArrayBuilder<TRootModel,TElementModel> End()
         {
             _parent.Add(async (writer, context) =>
             {
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings));
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TRootModel,TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings));
 
                 if (array.HasData())
                 {
@@ -177,7 +180,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     {
                         await writer.WriteStartObjectAsync(context.CancellationToken);
 
-                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings);
+                        var newContext = new JsonTemplateBuilderContext<TRootModel,TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings);
 
                         foreach (var func in _pipe)
                         {
@@ -199,7 +202,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             this.End();
         }
 
-        public IList<PipeActionBuilder<TElementModel>> Pipe => _pipe;
+        public IList<PipeActionBuilder<TRootModel,TElementModel>> Pipe => _pipe;
 
         public  NSwagSchemeBuilder SchemaBuilder { get;}
 

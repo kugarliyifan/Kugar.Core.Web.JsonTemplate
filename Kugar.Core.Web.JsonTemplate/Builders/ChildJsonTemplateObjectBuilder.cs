@@ -9,60 +9,63 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IChildObjectBuilder< TCurrentModel> : IObjectBuilderInfo,IObjectBuilderPipe<TCurrentModel>,IDisposable
+    public interface IChildObjectBuilder<TRootModel, TCurrentModel> : IObjectBuilderInfo,IObjectBuilderPipe<TRootModel,TCurrentModel>,IDisposable
     {
-        IChildObjectBuilder<TCurrentModel> AddProperty<TValue>(
+        IChildObjectBuilder<TRootModel,TCurrentModel> AddProperty<TValue>(
             string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TValue> valueFactory,
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
             Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, bool> ifCheckExp = null
         );
 
-        IChildObjectBuilder<TNewChildModel> AddObject<TNewChildModel>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory,
+        IChildObjectBuilder<TRootModel,TNewChildModel> AddObject<TNewChildModel>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, TNewChildModel> valueFactory,
             bool isNull = false,
             string description = "",
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TNewChildModel>, bool> ifCheckExp = null,
+            Func<IJsonTemplateBuilderContext<TRootModel,TNewChildModel>, bool> ifNullRender = null
         );
 
-        IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
-            bool isNull = false,
-            string description = "",
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
-        );
-
-        IChildObjectBuilder<TCurrentModel>  AddArrayValue<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
+        IArrayBuilder<TRootModel,TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
             string description = "",
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
+            Func<IJsonTemplateBuilderContext<TRootModel,IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
-        IChildObjectBuilder<TCurrentModel> Start();
+        IChildObjectBuilder<TRootModel,TCurrentModel>  AddArrayValue<TArrayElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
+            bool isNull = false,
+            string description = "",
+            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            Func<IJsonTemplateBuilderContext<TRootModel,IEnumerable<TArrayElement>>, bool> ifNullRender = null
+        );
+
+        IChildObjectBuilder<TRootModel,TCurrentModel> Start();
         
     }
 
-    internal class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : IChildObjectBuilder<TCurrentModel>
+    public interface IChildObjectBuilder<TModel>:IChildObjectBuilder<TModel,TModel>{}
+    
+
+    internal class ChildJsonTemplateObjectBuilder<TRootModel,TParentModel, TCurrentModel> : IChildObjectBuilder<TRootModel,TCurrentModel>
     {
-        private List<PipeActionBuilder<TCurrentModel>> _pipe = new List<PipeActionBuilder<TCurrentModel>>();
+        private List<PipeActionBuilder<TRootModel,TCurrentModel>> _pipe = new List<PipeActionBuilder<TRootModel,TCurrentModel>>();
         private bool _isNewObject = false;
 
-        private IObjectBuilderPipe<TParentModel> _parent;
+        private IObjectBuilderPipe<TRootModel,TParentModel> _parent;
 
         //private IList<PipeActionBuilder<TChildModel>> _changeTypeParent = null;
-        private Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> _childObjFactory;
+        private Func<IJsonTemplateBuilderContext<TRootModel,TParentModel>, TCurrentModel> _childObjFactory;
         //private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifNullRender = null;
         //private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifCheckExp = null;
 
-        public ChildJsonTemplateObjectBuilder(IObjectBuilderPipe<TParentModel> parent,
-            Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> childObjFactory,
+        public ChildJsonTemplateObjectBuilder(IObjectBuilderPipe<TRootModel,TParentModel> parent,
+            Func<IJsonTemplateBuilderContext<TRootModel,TParentModel>, TCurrentModel> childObjFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver,
@@ -80,8 +83,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             this.Resolver = resolver;
         }
 
-        public IChildObjectBuilder<TCurrentModel> AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, TValue> valueFactory, string description = "",
-            bool isNull = false, object example = null, Type? newValueType = null, Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp = null)
+        public IChildObjectBuilder<TRootModel,TCurrentModel> AddProperty<TValue>(string propertyName, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, TValue> valueFactory, 
+            string description = "",
+            bool isNull = false, 
+            object example = null, 
+            Type? newValueType = null, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, bool> ifCheckExp = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -128,12 +136,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public IChildObjectBuilder<TNewChildModel> AddObject<TNewChildModel>(string propertyName, 
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory, 
+        public IChildObjectBuilder<TRootModel,TNewChildModel> AddObject<TNewChildModel>(string propertyName, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, TNewChildModel> valueFactory, 
             bool isNull = false,
             string description = "", 
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null)
+            Func<IJsonTemplateBuilderContext<TRootModel,TNewChildModel>, bool> ifCheckExp = null,
+            Func<IJsonTemplateBuilderContext<TRootModel,TNewChildModel>, bool> ifNullRender = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -149,7 +157,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return new ChildJsonTemplateObjectBuilder<TCurrentModel, TNewChildModel>(this,
+            return new ChildJsonTemplateObjectBuilder<TRootModel,TCurrentModel, TNewChildModel>(this,
                 valueFactory,
                 childSchemeBuilder,
                 Generator,
@@ -157,8 +165,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 isNewObject:true/*, ifNullRender: ifNullRender*/).Start();
         }
 
-        public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
-            string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null)
+        public IArrayBuilder<TRootModel,TArrayElement> AddArrayObject<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
+            string description = "", Func<IJsonTemplateBuilderContext<TRootModel,IEnumerable<TArrayElement>>, bool> ifNullRender = null)
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
@@ -176,13 +184,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TCurrentModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver);
+            var s = new ArrayObjectTemplateObjectBuilder<TRootModel,TCurrentModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver);
 
             return s;
         }
 
-        public IChildObjectBuilder<TCurrentModel> AddArrayValue<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
-            string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null)
+        public IChildObjectBuilder<TRootModel,TCurrentModel> AddArrayValue<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TRootModel,TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
+            string description = "", Func<IJsonTemplateBuilderContext<TRootModel,IEnumerable<TArrayElement>>, bool> ifNullRender = null)
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
@@ -210,7 +218,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public IChildObjectBuilder<TCurrentModel> Start()
+        public IChildObjectBuilder<TRootModel,TCurrentModel> Start()
         {
             //if (_isNewObject)
             //{
@@ -242,9 +250,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     await writer.WriteStartObjectAsync(context.CancellationToken);
                 }
                 
-                var c=(JsonTemplateBuilderContext<TParentModel>)context;
+                var c=(JsonTemplateBuilderContext<TRootModel,TParentModel>)context;
 
-                var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData);
+                var newContext = new JsonTemplateBuilderContext<TRootModel,TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData);
 
                 foreach (var builder in _pipe)
                 {
@@ -263,7 +271,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public JsonSchemaGenerator Generator { get; }
         public JsonSchemaResolver Resolver { get; }
         public Type ModelType => typeof(TCurrentModel);
-        public IList<PipeActionBuilder<TCurrentModel>> Pipe => _pipe;
+        public IList<PipeActionBuilder<TRootModel,TCurrentModel>> Pipe => _pipe;
         public void Dispose()
         {
             End();

@@ -15,52 +15,52 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
     //    IObjectBuilder<TModel> End();
     //}
 
-    public interface IObjectBuilder<TModel> : /*IDisposable,*/ IObjectBuilderInfo,IObjectBuilderPipe<TModel>
+    public interface IObjectBuilder<TRootModel,TModel> : /*IDisposable,*/ IObjectBuilderInfo,IObjectBuilderPipe<TRootModel,TModel>
     {
-        IObjectBuilder<TModel> AddProperty<TValue>(
+        IObjectBuilder<TRootModel,TModel> AddProperty<TValue>(
             string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, TValue> valueFactory,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
             Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, bool> ifCheckExp = null
         );
 
-        IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
+        IChildObjectBuilder<TRootModel,TChildModel> AddObject<TChildModel>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = ""//,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
         );
 
-        IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
+        IArrayBuilder<TRootModel,TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
             string description = ""//,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
-        IObjectBuilder<TModel> AddArrayValue<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
+        IObjectBuilder<TRootModel,TModel> AddArrayValue<TArrayElement>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
             string description = ""//,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
-        IObjectBuilder<TModel> Start();
+        IObjectBuilder<TRootModel,TModel> Start();
 
-        IList<PipeActionBuilder<TModel>> Pipe { get; }
+        IList<PipeActionBuilder<TRootModel,TModel>> Pipe { get; }
 
     }
 
 
-    internal class JsonTemplateObjectBuilder<TModel> : IObjectBuilder<TModel>,IObjectBuilderPipe<TModel>
+    internal class JsonTemplateObjectBuilder<TRootModel,TModel> : IObjectBuilder<TRootModel,TModel>,IObjectBuilderPipe<TRootModel,TModel>
     {
-        private List<PipeActionBuilder<TModel>> _pipe = new List<PipeActionBuilder<TModel>>();
+        private List<PipeActionBuilder<TRootModel,TModel>> _pipe = new List<PipeActionBuilder<TRootModel,TModel>>();
 
         public JsonTemplateObjectBuilder(
             NSwagSchemeBuilder schemeBuilder,
@@ -85,14 +85,14 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="example">示例</param>
         /// <param name="ifCheckExp">运行时,检查是否要输出该属性</param>
         /// <returns></returns>
-        public IObjectBuilder<TModel> AddProperty<TValue>(
+        public IObjectBuilder<TRootModel,TModel> AddProperty<TValue>(
             string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, TValue> valueFactory,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TValue> valueFactory,
             string description = "",
             bool isNull = false,
             object example = null,
             Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, bool> ifCheckExp = null
             )
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
@@ -147,8 +147,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="isNull">是否允许为null</param>
         /// <param name="description">备注</param>
         /// <returns></returns>
-        public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
+        public IChildObjectBuilder<TRootModel,TChildModel> AddObject<TChildModel>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = ""
             )
@@ -167,7 +167,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(this,
+            return (IChildObjectBuilder<TRootModel,TChildModel>)new ChildJsonTemplateObjectBuilder<TRootModel,TModel, TChildModel>(this,
                 valueFactory,
                 childSchemeBuilder,
                 Generator,
@@ -187,9 +187,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="description">备注</param>
         /// <param name="ifNullRender">如果值为null,是否继续调用输出,为true时,继续调用各种参数回调,,为false时,直接输出null</param>
         /// <returns></returns>
-        public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(
+        public IArrayBuilder<TRootModel,TArrayElement> AddArrayObject<TArrayElement>(
             string propertyName,
-            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
             string description = ""//,
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
@@ -211,7 +211,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver);
+            var s = new ArrayObjectTemplateObjectBuilder<TRootModel,TModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver);
 
             return s;
         }
@@ -226,9 +226,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="description">备注</param>
         /// <param name="ifNullRender">如果值为null,是否输出该属性,为true时,输出该属性,并且值为null,,为false时,不输出该属性,直接跳过</param>
         /// <returns></returns>
-        public IObjectBuilder<TModel> AddArrayValue<TArrayElement>(
+        public IObjectBuilder<TRootModel,TModel> AddArrayValue<TArrayElement>(
             string propertyName, 
-            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory, 
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IEnumerable<TArrayElement>> valueFactory, 
             bool isNull = false,
             string description = ""//, 
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
@@ -263,7 +263,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
 
 
-        public virtual IObjectBuilder<TModel> Start()
+        public virtual IObjectBuilder<TRootModel,TModel> Start()
         {
             _pipe.Add(async (writer, context) =>
             {
@@ -282,7 +282,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             
         }
 
-        public virtual IList<PipeActionBuilder<TModel>> Pipe => _pipe;
+        public virtual IList<PipeActionBuilder<TRootModel,TModel>> Pipe => _pipe;
         
         public NSwagSchemeBuilder SchemaBuilder { get; set; }
 

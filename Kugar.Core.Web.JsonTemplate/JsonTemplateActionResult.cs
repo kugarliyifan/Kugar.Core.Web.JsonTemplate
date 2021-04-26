@@ -64,7 +64,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
                 var model = (TModel) Model;
                  
-                var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext,model, model,jsonSettings);
+                var modelContext = new JsonTemplateBuilderContext<TModel,TModel>(context.HttpContext,model, model,jsonSettings);
 
                 foreach (var pipe in objectBuilder.Pipe)
                 {

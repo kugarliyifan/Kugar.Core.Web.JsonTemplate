@@ -21,14 +21,14 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="newPropertyName">新属性名,如果需要修改objectPropertyExp输出的属性,则传入该参数</param>
         /// <param name="ifCheckExp">传入一个回调,用于判断在运行时是否添加该属性</param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TModel> AddProperty<TModel, TValue>(
-            this IChildObjectBuilder<TModel> builder,
+        public static IChildObjectBuilder<TRootModel,TModel> AddProperty<TRootModel,TModel, TValue>(
+            this IChildObjectBuilder<TRootModel,TModel> builder,
             Expression<Func<TModel, TValue>> objectPropertyExp,
             string description = "",
             bool isNull = false,
             object example = null,
             string newPropertyName = null,
-            Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, bool> ifCheckExp = null
         )
         {
             if (objectPropertyExp==null)
@@ -62,8 +62,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectPropertyExpList">属性表达式</param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TModel> AddProperties<TModel>(
-            this IChildObjectBuilder< TModel> builder,
+        public static IChildObjectBuilder<TRootModel,TModel> AddProperties<TRootModel,TModel>(
+            this IChildObjectBuilder<TRootModel, TModel> builder,
             params Expression<Func<TModel, object>>[] objectPropertyExpList
         )
         {
@@ -95,8 +95,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static IChildObjectBuilder< TNewObject> FromObject<TChildModel, TNewObject>(this IChildObjectBuilder<TChildModel> builder,
-            Func<IJsonTemplateBuilderContext<TChildModel>, TNewObject> objectFactory
+        public static IChildObjectBuilder< TRootModel,TNewObject> FromObject<TRootModel,TChildModel, TNewObject>(this IChildObjectBuilder<TRootModel,TChildModel> builder,
+            Func<IJsonTemplateBuilderContext<TRootModel,TChildModel>, TNewObject> objectFactory
         )
         {
             if (objectFactory==null)
@@ -104,7 +104,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(objectFactory));
             }
 
-            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TChildModel, TNewObject>(builder,
+            return (IChildObjectBuilder<TRootModel,TNewObject>)new ChildJsonTemplateObjectBuilder<TRootModel,TChildModel, TNewObject>(builder,
                 objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
         }
 
@@ -115,8 +115,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TModel> FromWechatPayProperties<TModel>(this IChildObjectBuilder<TModel> builder,
-            Func<IJsonTemplateBuilderContext<TModel>, JObject> objectFactory)
+        public static IChildObjectBuilder<TRootModel,TModel> FromWechatPayProperties<TRootModel,TModel>(this IChildObjectBuilder<TRootModel,TModel> builder,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, JObject> objectFactory)
         {
             if (objectFactory==null)
             {

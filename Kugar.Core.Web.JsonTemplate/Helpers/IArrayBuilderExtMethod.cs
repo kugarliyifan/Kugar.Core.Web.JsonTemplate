@@ -19,14 +19,14 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="newPropertyName">新属性名,如果需要修改objectPropertyExp输出的属性,则传入该参数</param>
         /// <param name="ifCheckExp">传入一个回调,用于判断在运行时是否添加该属性</param>
         /// <returns></returns>
-        public static IArrayBuilder<TModel> AddProperty<TModel, TValue>(
-            this IArrayBuilder<TModel> builder,
+        public static IArrayBuilder<TRootModel,TModel> AddProperty<TRootModel,TModel, TValue>(
+            this IArrayBuilder<TRootModel,TModel> builder,
             Expression<Func<TModel, TValue>> objectPropertyExp,
             string description = "",
             bool isNull = false,
             object example = null,
             string newPropertyName = null,
-            Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, bool> ifCheckExp = null
             )
         {
             if (objectPropertyExp==null)
@@ -59,8 +59,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectPropertyExpList">属性表达式</param>
         /// <returns></returns>
-        public static IArrayBuilder<TModel> AddProperties<TModel>(
-            this IArrayBuilder<TModel> builder,
+        public static IArrayBuilder<TRootModel,TModel> AddProperties<TRootModel,TModel>(
+            this IArrayBuilder<TRootModel,TModel> builder,
             params Expression<Func<TModel, object>>[] objectPropertyExpList
             )
         {
@@ -92,11 +92,11 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TNewObject> FromObject<TModel, TNewObject>(this IArrayBuilder<TModel> builder,
-            Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
+        public static IChildObjectBuilder<TRootModel,TNewObject> FromObject<TRootModel,TModel, TNewObject>(this IArrayBuilder<TRootModel,TModel> builder,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TNewObject> objectFactory
         )
         {
-            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
+            return (IChildObjectBuilder<TRootModel,TNewObject>)new ChildJsonTemplateObjectBuilder<TRootModel,TModel, TNewObject>(builder,
                 objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
         }
 

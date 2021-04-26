@@ -98,7 +98,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class TestTemplate2 : WrapResultReturnJsonTemplateBase<Test<string, string>>
     {
-        protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>> builder)
+        protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>, Test<string, string>> builder)
         {
             builder.AddProperty(x=>x.Prop1)
                 .AddProperty("Prop2",x=>x.Model.Prop2,"sdfsfsf");

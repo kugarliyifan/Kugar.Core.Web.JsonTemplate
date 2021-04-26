@@ -26,12 +26,12 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static IServiceProvider Provider { set; get; }
 
-        public static IObjectBuilderPipe<TModel> GetTemplate<TBuilder, TModel>()
+        public static IObjectBuilderPipe<TModel,TModel> GetTemplate<TBuilder, TModel>()
             where TBuilder : JsonTemplateBase<TModel>, new()
         {
             var builderType = typeof(TBuilder);
 
-            var objectBuilder = (IObjectBuilderPipe<TModel>)_cache.GetOrAdd(builderType, (type) =>
+            var objectBuilder = (IObjectBuilderPipe<TModel,TModel>)_cache.GetOrAdd(builderType, (type) =>
               {
                   var m = typeof(GlobalJsonTemplateCache)
                       .GetMethod("Build")
@@ -120,7 +120,7 @@ namespace Kugar.Core.Web.JsonTemplate
             }
         }
 
-        public static IObjectBuilderPipe<TModel> Build<TBuilder, TModel>(Type builderType, Type modelType) where TBuilder : JsonTemplateBase<TModel>, new()
+        public static IObjectBuilderPipe<TModel,TModel> Build<TBuilder, TModel>(Type builderType, Type modelType) where TBuilder : JsonTemplateBase<TModel>, new()
         {
             var opt =
                 (IOptions<AspNetCoreOpenApiDocumentGeneratorSettings>)Provider.GetService(
@@ -158,7 +158,7 @@ namespace Kugar.Core.Web.JsonTemplate
             //var _defaultSettings = JsonConvert.DefaultSettings?.Invoke();
 #endif
 
-            var builder = new JsonTemplateObjectBuilder<TModel>(
+            var builder = new JsonTemplateObjectBuilder<TModel,TModel>(
                 new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
                 generator,
                 schemaResolver);

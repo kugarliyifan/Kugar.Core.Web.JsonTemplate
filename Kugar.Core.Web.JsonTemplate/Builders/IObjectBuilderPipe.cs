@@ -2,8 +2,8 @@
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IObjectBuilderPipe<TModel>
+    public interface IObjectBuilderPipe<TRootModel,TModel>
     {
-        IList<PipeActionBuilder<TModel>> Pipe { get; }
+        IList<PipeActionBuilder<TRootModel,TModel>> Pipe { get; }
     }
 }
