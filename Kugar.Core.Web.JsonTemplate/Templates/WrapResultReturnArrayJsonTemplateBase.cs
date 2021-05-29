@@ -26,14 +26,14 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         /// 构建内层ReturnData属性数组Item内部的参数,对builder参数不要使用using
         /// </summary>
         /// <param name="builder"></param>
-        protected abstract void BuildReturnDataScheme(IArrayBuilder<TModel,TElement> builder);
+        protected abstract void BuildReturnDataScheme(IArrayBuilder<TElement> builder);
 
         /// <summary>
         /// 用于控制输出的外层ResultReturn的属性
         /// </summary>
         protected virtual ResultReturnArrayFactory<TModel> ResultFactory{get;}
 
-        protected virtual IArrayBuilder<TModel,TElement> BuildWrap(IObjectBuilder<TModel,TModel> builder)
+        protected virtual IArrayBuilder<TElement> BuildWrap(IObjectBuilder<TModel> builder)
         {
             using (var b=builder.FromObject(context => (ResultFactory ?? _defaultResultFactory).Invoke(context)))
             {
@@ -43,7 +43,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             return builder.AddArrayObject<TElement>("returnData", x => x.Model);
         }
 
-        public override void BuildScheme(IObjectBuilder<TModel, TModel> builder)
+        public override void BuildScheme(IObjectBuilder<TModel> builder)
         {
             using (var b = BuildWrap(builder))
             {
@@ -51,6 +51,6 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             }
         }
 
-        public delegate ResultReturn ResultReturnArrayFactory<in TModel>(IJsonTemplateBuilderContext<TModel,TModel> context);
+        public delegate ResultReturn ResultReturnArrayFactory<in TModel>(IJsonTemplateBuilderContext<TModel> context);
     }
 }

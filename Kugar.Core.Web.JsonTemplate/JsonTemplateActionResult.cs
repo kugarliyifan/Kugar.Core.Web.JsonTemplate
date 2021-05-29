@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -62,9 +63,25 @@ namespace Kugar.Core.Web.JsonTemplate
                 
                 var objectBuilder=GlobalJsonTemplateCache.GetTemplate<TBuilder, TModel>();
 
-                var model = (TModel) Model;
-                 
-                var modelContext = new JsonTemplateBuilderContext<TModel,TModel>(context.HttpContext,model, model,jsonSettings);
+                TModel model;
+
+                try
+                {
+                    model = (TModel) Model;
+                }
+                catch (Exception e)
+                {
+                    var logger = (ILogger) context.HttpContext.RequestServices.GetService(typeof(ILogger));
+                    logger.Log(LogLevel.Error,"格式转换出错",e);
+                    throw new Exception("格式转换出错", e);
+                }
+                
+                if (model==null)
+                {
+                    throw new ArgumentNullException(nameof(model), $"model转换为{typeof(TModel).Name}失败,请检查传入的model的类型");
+                }
+
+                var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext,model, model,jsonSettings);
 
                 foreach (var pipe in objectBuilder.Pipe)
                 {
@@ -74,7 +91,11 @@ namespace Kugar.Core.Web.JsonTemplate
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        var logger = (ILogger) context.HttpContext.RequestServices.GetService(typeof(ILogger));
+                        logger.Log(LogLevel.Error,"piple函数执行出错",e);
+
+                        await Task.FromException(e);
+                     
                         throw;
                     }
                     

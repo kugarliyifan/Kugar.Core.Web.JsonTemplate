@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -90,14 +91,20 @@ namespace Kugar.Core.Web.JsonTemplate
             //    return true;
             //}
 
+            Debugger.Break();
+            var methodParamters = context.MethodInfo.GetParameters();
+
+            if (!methodParamters.Any(x=>x.ParameterType.Name.StartsWith("ValueTuple`")))
+            {
+                return true;
+            }
             var sourceParamters = context.OperationDescription.Operation.Parameters.ToArrayEx();
             
             context.OperationDescription.Operation.Parameters.Clear();
 
             var jsonScheme = new JsonSchema();
             jsonScheme.Type = JsonObjectType.Object;
-
-            var methodParamters = context.MethodInfo.GetParameters();
+            
 
             for (int i = 0; i < methodParamters.Length; i++)
             {
@@ -220,5 +227,6 @@ namespace Kugar.Core.Web.JsonTemplate
                           x == typeof(FromHeaderAttribute) ||
                           x == typeof(FromServicesAttribute));
         }
+
     }
 }

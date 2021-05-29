@@ -38,17 +38,17 @@ namespace Kugar.Core.Web.JsonTemplate
         ILogger Logger { get; }
     }
 
-    public interface IJsonTemplateBuilderContext<out TRootTModel, out TModel>:IJsonTemplateBuilderContext
+    public interface IJsonTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext
     {
         /// <summary>
         /// 传入的Model数据
         /// </summary>
         TModel Model { get; }
 
-        TRootTModel RootModel { get; }
+        dynamic RootModel { get; }
     }
 
-    public interface IJsonArrayTemplateBuilderContext<out TRootModel,out TModel>:IJsonTemplateBuilderContext<TRootModel,TModel>
+    public interface IJsonArrayTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext<TModel>
     {
         /// <summary>
         /// 在ArrayObject单次循环中的临时数据
@@ -56,13 +56,13 @@ namespace Kugar.Core.Web.JsonTemplate
         Dictionary<string,object> LoopItemTemporaryData { get; }
     }
 
-    internal class JsonTemplateBuilderContext<TRootModel,TModel> : IJsonTemplateBuilderContext<TRootModel,TModel>
+    internal class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
     {
         private Lazy<Dictionary<string, object>> _temporaryData = new Lazy<Dictionary<string, object>>();
         internal Lazy<Dictionary<string, object>> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(HttpContext context,TRootModel rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
+        public JsonTemplateBuilderContext(HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
@@ -82,7 +82,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public TModel Model { get; }
 
-        public TRootModel RootModel  { get; }
+        public dynamic RootModel  { get; }
 
         public CancellationToken CancellationToken => HttpContext.RequestAborted;
 

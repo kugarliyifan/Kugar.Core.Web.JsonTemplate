@@ -13,7 +13,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
     /// </summary>
     public static class CoreStructExtMethod
     {
-        public static IChildObjectBuilder<TRootModel,TModel> FromReturnResult<TRootModel,TModel>(this IObjectBuilder<TRootModel,TModel> source,Func<IJsonTemplateBuilderContext<TRootModel,TModel>, bool> resultFactory)
+        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
         {
             source.AddProperty("isSuccess", resultFactory,"本次操作是否成功")
                 .AddProperty("message", x => string.Empty,"操作结果文本")
@@ -23,8 +23,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TRootModel,TModel> FromReturnResult<TRootModel,TModel>(this IObjectBuilder<TRootModel, TModel> source,
-            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, (bool isSuccess, string message)> resultFactory)
+        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder< TModel> source,
+            Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -40,9 +40,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TRootModel,TModel> FromReturnResult<TRootModel,TModel>(
-            this IObjectBuilder<TRootModel,TModel> source,
-            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
+        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
+            this IObjectBuilder<TModel> source,
+            Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -56,9 +56,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TRootModel,TModel> FromReturnResult<TRootModel,TModel>(
-            this IObjectBuilder<TRootModel,TModel> source,
-            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, ResultReturn> resultFactory)
+        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
+            this IObjectBuilder<TModel> source,
+            Func<IJsonTemplateBuilderContext<TModel>, ResultReturn> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -73,8 +73,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model,description:"输出的实际结果");
         }
 
-        public static IArrayBuilder<TRootModel,TElement> FromPagedList<TRootModel,TModel, TElement>(this IObjectBuilder<TRootModel,TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IPagedList<TElement>> valueFactory
+        public static IArrayBuilder<TElement> FromPagedList<TModel, TElement>(this IObjectBuilder<TModel> builder,
+            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
             )
         {
             if (valueFactory == null)
@@ -91,14 +91,14 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
         }
 
-        public static IArrayBuilder<TRootModel,TElement> FromPagedList<TRootModel,TElement>(
-            this IObjectBuilder<TRootModel,IPagedList<TElement>> builder)
+        public static IArrayBuilder<TElement> FromPagedList<TElement>(
+            this IObjectBuilder<IPagedList<TElement>> builder)
         {
             return FromPagedList(builder, x => x.Model);
         }
 
-        public static IArrayBuilder<TRootModel,TElement> FromPagedList<TRootModel,TModel, TElement>(this IChildObjectBuilder<TRootModel,TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TRootModel,TModel>, IPagedList<TElement>> valueFactory
+        public static IArrayBuilder<TElement> FromPagedList<TModel, TElement>(this IChildObjectBuilder<TModel> builder,
+            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
         )
         {
             if (valueFactory == null)
@@ -115,8 +115,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
         }
 
-        public static IArrayBuilder<TRootModel,TElement> FromPagedList<TRootModel,TElement>(
-            this IChildObjectBuilder<TRootModel,IPagedList<TElement>> builder)
+        public static IArrayBuilder<TElement> FromPagedList<TElement>(
+            this IChildObjectBuilder<IPagedList<TElement>> builder)
         {
             return FromPagedList(builder, x => x.Model);
         }
