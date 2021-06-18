@@ -42,10 +42,15 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
 
         protected virtual IChildObjectBuilder<TModel> BuildWrap(IObjectBuilder<TModel> builder)
         {
-            return builder.FromReturnResult(context=>(ResultFactory??_defaultResultFactory).Invoke(context));
+            return builder.FromReturnResult(GetResultReturn);
         }
 
-        public delegate ResultReturn ResultReturnFactory<in TModelData>(IJsonTemplateBuilderContext<TModelData> context);
+        protected virtual ResultReturn GetResultReturn(IJsonTemplateBuilderContext<TModel> context)
+        {
+            return _defaultResultFactory(context);
+        }
+
+        public delegate ResultReturn ResultReturnFactory<TModelData>(IJsonTemplateBuilderContext<TModelData> context);
     }
 
     

@@ -50,7 +50,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
             //var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
 
-            return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).ToArrayEx());
+            return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333",List =Enumerable.Repeat(new APIn(){OO = 3,SSS = "sdfsf"},20)},20).ToArrayEx());
 
         }
 
@@ -98,7 +98,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class TestTemplate2 : WrapResultReturnJsonTemplateBase<Test<string, string>>
     {
-        protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>, Test<string, string>> builder)
+        protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>> builder)
         {
             builder.AddProperty(x=>x.Prop1)
                 .AddProperty("Prop2",x=>x.Model.Prop2,"sdfsfsf");
@@ -117,16 +117,26 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
             builder.AddArrayValue("arrayTest", x => x.Model.ArrayTest);
         }
-
+        
         protected override ResultReturnFactory<Test<string, string>> ResultFactory =>
             (c) => new FailResultReturn("sdfs");
     }
 
     public class TestTemplate3 : WrapResultReturnArrayJsonTemplateBase<AP>
     {
+        //protected override void BuildReturnDataScheme(IArrayBuilder<IEnumerable<AP>> builder)
+        //{
+        //    builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
+        //}
+
         protected override void BuildReturnDataScheme(IArrayBuilder<AP> builder)
         {
             builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
+
+            using (var b=builder.AddArrayObject("List",x=>x.Model.List))
+            {
+                b.AddProperties(x => x.OO, x => x.SSS);
+            }
         }
     }
 
@@ -196,5 +206,14 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// int2原备注
         /// </summary>
         public int int2 { set; get; }
+
+        public IEnumerable<APIn> List { set; get; }
+    }
+
+    public class APIn
+    {
+        public string SSS { set; get; }
+
+        public int OO { set; get; }
     }
 }

@@ -3,5 +3,5 @@ using Newtonsoft.Json;
 
 namespace Kugar.Core.Web.JsonTemplate
 {
-    public delegate Task PipeActionBuilder<in TModel>(JsonWriter writer, IJsonTemplateBuilderContext<TModel> context);
+    public delegate Task PipeActionBuilder<TModel>(JsonWriter writer, IJsonTemplateBuilderContext<TModel> context);
 }

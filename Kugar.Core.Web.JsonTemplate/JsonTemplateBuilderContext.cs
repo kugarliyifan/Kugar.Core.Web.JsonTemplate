@@ -38,17 +38,17 @@ namespace Kugar.Core.Web.JsonTemplate
         ILogger Logger { get; }
     }
 
-    public interface IJsonTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext
+    public interface IJsonTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext
     {
         /// <summary>
         /// 传入的Model数据
         /// </summary>
-        TModel Model { get; }
+        TModel Model { get; set; }
 
         dynamic RootModel { get; }
     }
 
-    public interface IJsonArrayTemplateBuilderContext<out TModel>:IJsonTemplateBuilderContext<TModel>
+    public interface IJsonArrayTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext<TModel>
     {
         /// <summary>
         /// 在ArrayObject单次循环中的临时数据
@@ -80,7 +80,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public Dictionary<string, object> GlobalTemporaryData => _globalTemporaryData.Value;
 
-        public TModel Model { get; }
+        public TModel Model { get; set; }
 
         public dynamic RootModel  { get; }
 
