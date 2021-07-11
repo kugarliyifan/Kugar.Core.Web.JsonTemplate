@@ -62,7 +62,7 @@ namespace Kugar.Core.Web.JsonTemplate
         internal Lazy<Dictionary<string, object>> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
+        public JsonTemplateBuilderContext(Microsoft.AspNetCore.Http.HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
@@ -74,7 +74,7 @@ namespace Kugar.Core.Web.JsonTemplate
             //CancellationToken = context.RequestAborted;
         }
 
-        public HttpContext HttpContext { get; }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { get; }
 
         public Dictionary<string, object> ScopeTemporaryData => _temporaryData.Value;
 

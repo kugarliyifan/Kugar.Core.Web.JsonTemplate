@@ -10,8 +10,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Kugar.Core.ExtMethod;
 using Newtonsoft.Json.Serialization;
+using NJsonSchema;
 using NSwag;
+using NSwag.Generation.AspNetCore;
+using NSwag.Generation.Processors;
 using NSwag.Generation.Processors.Security;
 
 namespace Kugar.Core.Web.JsonTemplate.Test
@@ -34,28 +38,28 @@ namespace Kugar.Core.Web.JsonTemplate.Test
 
             services.AddOptions<JsonTemplateOption>();
 
-            services.AddSwaggerDocument(opt =>
+            services.AddOpenApiDocument(opt =>
             {
                 //opt.DocumentName = "api";
-                // opt.ApiGroupNames = new[] { "wxapi" };
-                opt.DocumentName = "wxapi";
+                opt.ApiGroupNames = new[] { "api" };
+                opt.DocumentName = "api";
                 opt.Title = "微信小程序接口";
-
-                AppDomain.CurrentDomain.GetAssemblies();
+                 
 
                 opt.AddJsonTemplateV2(typeof(Startup).Assembly);
-                opt.PostProcess = (doc) =>
-                {
-                    doc.Consumes = new string[] {"application/json"};
-                    doc.Produces = new string[] {"application/json"};
-                };
+                opt.UseControllerSummaryAsTagDescription = true;
+
+                opt.OperationProcessors.Add(new ValueTupleOperationProcessor());
+                //opt.DocumentProcessors.Add(new Ty());
+
+                opt.OperationProcessors.Add(new ActionParamtersToJsonBodyProcessor());
 
                 opt.DocumentProcessors.Add(new SecurityDefinitionAppender("Authorization", new OpenApiSecurityScheme()
                 {
                     Type = OpenApiSecuritySchemeType.ApiKey,
                     Name = "Authorization",
                     In = OpenApiSecurityApiKeyLocation.Header,
-                    Description = "授权token",
+                    Description = "token",
 
                 }));
             });

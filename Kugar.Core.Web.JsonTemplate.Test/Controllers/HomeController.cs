@@ -2,11 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Kugar.Core.BaseStruct;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.Filters;
 using Kugar.Core.Web.JsonTemplate.Builders;
 using Kugar.Core.Web.JsonTemplate.Helpers;
 using Kugar.Core.Web.JsonTemplate.Templates;
@@ -26,35 +28,42 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// <param name="str1">测试参数1</param>
         /// <param name="int2">测试参数2</param>
         /// <returns></returns>
-        [HttpPost,ProducesResponseType(typeof(TestTemplate2),200)]
-        public async Task<IActionResult> Index([FromQuery]string fromq1, string str1,int int2,(string str2,int p) args2 )
+        [HttpPost, FromBodyJson, ProducesResponseType(typeof(TestTemplate2), 200)]
+        public async Task<IActionResult> Index(string str1, int int2, (string str2, int p) args2)
         {
             return this.Json<TestTemplate2>(new Test<string, string>("22", "33"));
-            
-        }
-
-        [ProducesResponseType(typeof(TestTemplate2),200)]
-        public async Task<IActionResult> Index2()
-        {
-            return this.Json<TestTemplate2>(new Test<string, string>("22", "33"));
-            
-        }
-
-        [ProducesResponseType(typeof(TestTemplate3),200)]
-        public async Task<IActionResult> Index3()
-        {
-            //var p=GlobalJsonTemplateCache.Build<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3),
-            //    typeof(System.Collections.Generic.IEnumerable<AP>));
-
-            //var b = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
-
-            //var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
-
-            return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333",List =Enumerable.Repeat(new APIn(){OO = 3,SSS = "sdfsf"},20)},20).ToArrayEx());
 
         }
 
-        public async Task<IActionResult> Index4()
+        //[ProducesResponseType(typeof(TestTemplate2),200)]
+        //public async Task<IActionResult> Index2()
+        //{
+        //    return this.Json<TestTemplate2>(new Test<string, string>("22", "33"));
+
+        //}
+
+        //[ProducesResponseType(typeof(TestTemplate3),200)]
+        //public async Task<IActionResult> Index3()
+        //{
+        //    //var p=GlobalJsonTemplateCache.Build<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3),
+        //    //    typeof(System.Collections.Generic.IEnumerable<AP>));
+
+        //    //var b = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
+
+        //    //var t = GlobalJsonTemplateCache.GetActionResultType(typeof(TestTemplate3), Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333"},20).GetType());
+
+        //    return this.Json<TestTemplate3>((IEnumerable<AP>)Enumerable.Repeat(new AP(){int2 = 2,str2 = "str2",str3 = "33333",List =Enumerable.Repeat(new APIn(){OO = 3,SSS = "sdfsf"},20)},20).ToArrayEx());
+
+        //}
+
+        /// <summary>
+        /// sdfs
+        /// </summary>
+        /// <param name="p1">222</param>
+        /// <param name="o3">333</param>
+        /// <returns></returns>
+        [HttpPost,FromBodyJson,ValidateRule, ProducesResponseType(typeof(ResultReturn<int>), 200)]
+        public async Task<IActionResult> Index4([Required]string p1,[Required]int o3)
         {
             var t = new VM_PagedList<(Input input, AP ap)>(
                 Enumerable.Repeat(
@@ -65,6 +74,12 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
             return this.Json<Test3Template>(t);
         }
+
+        //[HttpPost,FromBodyJson]
+        //public async Task<IActionResult> Index5((string io, int o3) obj)
+        //{
+        //    return Json(SuccessResultReturn.Default);
+        //}
     }
 
     public class Input
