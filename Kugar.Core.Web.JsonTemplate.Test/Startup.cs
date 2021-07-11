@@ -50,11 +50,6 @@ namespace Kugar.Core.Web.JsonTemplate.Test
                 opt.AddJsonTemplateV2(typeof(Startup).Assembly);
                 opt.UseControllerSummaryAsTagDescription = true;
 
-                opt.OperationProcessors.Add(new ValueTupleOperationProcessor());
-                //opt.DocumentProcessors.Add(new Ty());
-
-                opt.OperationProcessors.Add(new ActionParamtersToJsonBodyProcessor());
-
                 opt.DocumentProcessors.Add(new SecurityDefinitionAppender("Authorization", new OpenApiSecurityScheme()
                 {
                     Type = OpenApiSecuritySchemeType.ApiKey,

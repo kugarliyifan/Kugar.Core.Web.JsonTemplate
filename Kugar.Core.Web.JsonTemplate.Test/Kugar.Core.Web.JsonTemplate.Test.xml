@@ -30,6 +30,26 @@
             sdfsdfsdf
             </summary>
         </member>
+        <member name="T:Kugar.Core.Web.JsonTemplate.Test.Controllers.YYY">
+            <summary>
+            YYYY
+            </summary>
+        </member>
+        <member name="F:Kugar.Core.Web.JsonTemplate.Test.Controllers.YYY.UU">
+            <summary>
+            uuuu
+            </summary>
+        </member>
+        <member name="F:Kugar.Core.Web.JsonTemplate.Test.Controllers.YYY.OO">
+            <summary>
+            ooooo
+            </summary>
+        </member>
+        <member name="F:Kugar.Core.Web.JsonTemplate.Test.Controllers.YYY.PP">
+            <summary>
+            pppp
+            </summary>
+        </member>
         <member name="P:Kugar.Core.Web.JsonTemplate.Test.Controllers.Test`2.Prop2">
             <summary>
             prop2原备注

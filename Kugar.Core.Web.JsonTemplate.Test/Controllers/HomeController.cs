@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// <param name="int2">测试参数2</param>
         /// <returns></returns>
         [HttpPost, FromBodyJson, ProducesResponseType(typeof(TestTemplate2), 200)]
-        public async Task<IActionResult> Index([FromQuery]int o0,string str1, int int2,
+        public async Task<IActionResult> Index([FromQuery]int o0,string str1, int int2 ,
             
             [ValueTupleDescroption("str2","str2备注"),ValueTupleDescroption("p","p的备注")](string str2, int p) args2)
         {
@@ -96,6 +96,27 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// sdfsdfsdf
         /// </summary>
         public int Strr { set;get; }
+    }
+
+    /// <summary>
+    /// YYYY
+    /// </summary>
+    public enum YYY
+    {
+        /// <summary>
+        /// uuuu
+        /// </summary>
+        UU=0,
+
+        /// <summary>
+        /// ooooo
+        /// </summary>
+        OO=1,
+
+        /// <summary>
+        /// pppp
+        /// </summary>
+        PP=2
     }
 
     public class Test3Template : WrapResultReturnJsonTemplateBase<IPagedList<(Input input, AP ap)>>

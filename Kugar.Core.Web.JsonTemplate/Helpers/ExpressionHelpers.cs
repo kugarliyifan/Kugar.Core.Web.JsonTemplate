@@ -134,6 +134,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return desciption;
         }
 
+        public static XmlDocument XmlDoc { set; get; }
+
         private static void readXmlFile(Type type, Dictionary<string,string> dic)
         {
             //var type = typeof(T);
@@ -151,6 +153,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             try
             {
                 xml.Load(xmlFilePath);
+
+                XmlDoc = xml;
             }
             catch (Exception e)
             {
