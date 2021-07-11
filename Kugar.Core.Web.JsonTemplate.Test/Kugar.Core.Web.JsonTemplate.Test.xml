@@ -4,7 +4,7 @@
         <name>Kugar.Core.Web.JsonTemplate.Test</name>
     </assembly>
     <members>
-        <member name="M:Kugar.Core.Web.JsonTemplate.Test.Controllers.HomeController.Index(System.String,System.Int32,System.ValueTuple{System.String,System.Int32})">
+        <member name="M:Kugar.Core.Web.JsonTemplate.Test.Controllers.HomeController.Index(System.Int32,System.String,System.Int32,System.ValueTuple{System.String,System.Int32})">
             <summary>
             api测试
             </summary>

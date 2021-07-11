@@ -11,6 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.JsonTemplate.Processors;
 using Newtonsoft.Json.Serialization;
 using NJsonSchema;
 using NSwag;
@@ -66,7 +67,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test
 
             services.EnableSyncIO();
             
-            services.AddControllers().AddNewtonsoftJson(opt =>
+            services.AddControllers().EnableJsonValueModelBinder().AddNewtonsoftJson(opt =>
             {
                 opt.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
                 opt.SerializerSettings.ContractResolver ??= new DefaultContractResolver()

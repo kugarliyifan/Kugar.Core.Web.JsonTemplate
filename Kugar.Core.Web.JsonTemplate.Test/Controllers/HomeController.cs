@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Kugar.Core.BaseStruct;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.Filters;
+using Kugar.Core.Web.JsonTemplate.Attributes;
 using Kugar.Core.Web.JsonTemplate.Builders;
 using Kugar.Core.Web.JsonTemplate.Helpers;
 using Kugar.Core.Web.JsonTemplate.Templates;
@@ -29,7 +30,9 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// <param name="int2">测试参数2</param>
         /// <returns></returns>
         [HttpPost, FromBodyJson, ProducesResponseType(typeof(TestTemplate2), 200)]
-        public async Task<IActionResult> Index(string str1, int int2, (string str2, int p) args2)
+        public async Task<IActionResult> Index([FromQuery]int o0,string str1, int int2,
+            
+            [ValueTupleDescroption("str2","str2备注"),ValueTupleDescroption("p","p的备注")](string str2, int p) args2)
         {
             return this.Json<TestTemplate2>(new Test<string, string>("22", "33"));
 
@@ -75,11 +78,11 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             return this.Json<Test3Template>(t);
         }
 
-        //[HttpPost,FromBodyJson]
-        //public async Task<IActionResult> Index5((string io, int o3) obj)
-        //{
-        //    return Json(SuccessResultReturn.Default);
-        //}
+        [HttpPost, FromBodyJson]
+        public async Task<IActionResult> Index5((string io, int o3) obj)
+        {
+            return Json(SuccessResultReturn.Default);
+        }
     }
 
     public class Input
@@ -231,4 +234,6 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
         public int OO { set; get; }
     }
+
+
 }
