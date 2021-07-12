@@ -1,6 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Xml;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using NJsonSchema;
 using NSwag;
@@ -39,23 +44,59 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
 
                 context.OperationDescription.Operation.Parameters.Remove(x=>args.Any(y=>y.Key.Name==x.Name));
 
+                var methodName = context.MethodInfo.DeclaringType.FullName + "." + context.MethodInfo.Name;
+
+                var methodXmlNode = ExpressionHelpers.XmlDoc.GetElementsByTagName("member").AsEnumerable<XmlElement>()
+                    .Where(x => x.GetAttribute("name").StartsWith($"M:{methodName}"))
+                    .FirstOrDefault();
+
+                var paramXmlNodes = (methodXmlNode?.GetElementsByTagName("param").AsEnumerable<XmlElement>().ToArrayEx())??Array.Empty<XmlElement>();
+
                 var jsonSechma = new JsonSchema();
 
                 foreach (var p1 in args)
                 {
                     var pschema = p1.Value.Schema;
 
+                    var isRequired = p1.Value.IsRequired;
+
+                    if (p1.Key.GetCustomAttribute<RequiredAttribute>()!=null)
+                    {
+                        isRequired = true;
+                    }
+
+                    var description = p1.Value.Description;
+
+                    if (paramXmlNodes.Any(x=>x.GetAttribute("name")==p1.Value.Name))
+                    {
+                        var tmp = paramXmlNodes.FirstOrDefault(x => x.GetAttribute("name") == p1.Value.Name)
+                            .InnerText;
+
+                        if (tmp.Length > description.Length)
+                        {
+                            description = tmp;
+                        }
+                    }
+                    
                     var prop = new JsonSchemaProperty()
                     {
                         Type = pschema?.Type ?? NSwagSchemeBuilder.NetTypeToJsonObjectType(p1.Key.ParameterType),
-                        IsNullableRaw = pschema?.IsNullableRaw ?? p1.Value.IsNullableRaw,
-                        IsRequired = p1.Value.IsRequired,
-                        Default = pschema?.Default ?? p1.Value.Default,
-                        Description = p1.Value.Description,
+                        IsNullableRaw =(pschema?.IsNullableRaw ?? p1.Value.IsNullableRaw)??false ,
+                        IsRequired = isRequired,
+                        Default = (pschema?.Default) ?? p1.Value.Default,
+                        Description = description,
                         IsDeprecated = pschema?.IsDeprecated ?? p1.Value.IsDeprecated,
                         Example = p1.Value.Example,// pschema.Example,
-                        Item = pschema?.Item ?? p1.Value.Item
+                        Item = pschema?.Item ?? p1.Value.Item,
+                        MaxItems = pschema.MaxItems,
+                        MaxLength = pschema.MaxLength,
+                        Maximum = pschema.Maximum,
+                        MinLength = pschema.MinLength,
+                        Minimum = pschema.Minimum,
+                        MinItems = pschema.MinItems
                     };
+
+
 
                     if ((pschema?.Items ?? p1.Value.Items).HasData())
                     {
@@ -74,6 +115,26 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
                         foreach (var item in lst)
                         {
                             prop.Properties.Add(item);
+                        }
+                    }
+
+                    if ((pschema?.Enumeration ?? p1.Value.Enumeration).HasData())
+                    {
+                        var lst = (pschema?.Enumeration ?? p1.Value.Enumeration);
+
+                        foreach (var item in lst)
+                        {
+                            prop.Enumeration.Add(item);
+                        }
+                    }
+
+                    if ((pschema?.EnumerationNames ?? p1.Value.EnumerationNames).HasData())
+                    {
+                        var lst = (pschema?.EnumerationNames ?? p1.Value.EnumerationNames);
+
+                        foreach (var item in lst)
+                        {
+                            prop.EnumerationNames.Add(item);
                         }
                     }
 

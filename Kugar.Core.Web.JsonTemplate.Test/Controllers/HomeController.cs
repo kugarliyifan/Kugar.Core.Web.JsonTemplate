@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// <param name="int2">测试参数2</param>
         /// <returns></returns>
         [HttpPost, FromBodyJson, ProducesResponseType(typeof(TestTemplate2), 200)]
-        public async Task<IActionResult> Index([FromQuery]int o0,string str1, int int2 ,
+        public async Task<IActionResult> Index([FromQuery]int o0,[Description("ddd")]string str1, int int2 ,
             
             [ValueTupleDescroption("str2","str2备注"),ValueTupleDescroption("p","p的备注")](string str2, int p) args2)
         {
