@@ -89,6 +89,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
+                if (!context.PropertyRenderChecker(context,propertyName))
+                {
+                    return;
+                }
+
                 if (!(ifCheckExp?.Invoke(context) ?? true))
                 {
                     return;
