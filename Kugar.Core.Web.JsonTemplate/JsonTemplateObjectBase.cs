@@ -6,6 +6,7 @@ namespace Kugar.Core.Web.JsonTemplate
     public interface IJsonTemplateObject 
     { 
         Type ModelType { get; }
+        
     }
 
     /// <summary>
@@ -24,5 +25,16 @@ namespace Kugar.Core.Web.JsonTemplate
         /// 当前的模型类型
         /// </summary>
         public Type ModelType => typeof(TModel);
+
+        /// <summary>
+        /// 检查是否添加该属性,,返回true,输出该属性,,false为不输出该属性
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
+        public virtual bool PropertyRenderCheck(IJsonTemplateBuilderContext model, string propertyName)
+        {
+            return true;
+        }
     }
 }

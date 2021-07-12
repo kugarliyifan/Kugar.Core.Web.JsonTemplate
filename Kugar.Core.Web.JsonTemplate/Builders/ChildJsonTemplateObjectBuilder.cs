@@ -251,7 +251,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 
                 var c=(JsonTemplateBuilderContext<TParentModel>)context;
 
-                var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData);
+                var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData)
+                {
+                    PropertyRenderChecker = context.PropertyRenderChecker
+                };
 
                 foreach (var builder in _pipe)
                 {

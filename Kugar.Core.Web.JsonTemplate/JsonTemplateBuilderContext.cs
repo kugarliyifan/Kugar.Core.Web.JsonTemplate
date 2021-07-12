@@ -46,6 +46,8 @@ namespace Kugar.Core.Web.JsonTemplate
         TModel Model { get; set; }
 
         dynamic RootModel { get; }
+
+        Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { set; get; }
     }
 
     public interface IJsonArrayTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext<TModel>
@@ -83,6 +85,8 @@ namespace Kugar.Core.Web.JsonTemplate
         public TModel Model { get; set; }
 
         public dynamic RootModel  { get; }
+
+        public Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { get; set; }
 
         public CancellationToken CancellationToken => HttpContext.RequestAborted;
 

@@ -220,7 +220,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings));
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings)
+                {
+                    PropertyRenderChecker = context.PropertyRenderChecker
+                });
 
                 if (array.HasData())
                 {
@@ -228,7 +231,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     {
                         await writer.WriteStartObjectAsync(context.CancellationToken);
 
-                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings);
+                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
+                            PropertyRenderChecker = context.PropertyRenderChecker
+                        };
 
                         foreach (var func in _pipe)
                         {

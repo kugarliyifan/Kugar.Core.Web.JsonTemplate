@@ -57,6 +57,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
     }
 
+    public delegate bool IfCheckCallback<TModel>(IJsonTemplateBuilderContext<TModel> context, string propertyName);
 
     internal class JsonTemplateObjectBuilder<TModel> : IObjectBuilder<TModel>,IObjectBuilderPipe<TModel>
     {
@@ -102,6 +103,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
+                if (!context.PropertyRenderChecker(context,propertyName))
+                {
+                    return;
+                }
+
+
                 if (!(ifCheckExp?.Invoke(context)??true))
                 {
                     return;
