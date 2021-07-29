@@ -31,7 +31,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = ""//,
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
         );
 
@@ -103,10 +103,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
-                if (!context.PropertyRenderChecker(context,propertyName))
-                {
-                    return;
-                }
+                //if (!context.PropertyRenderChecker(context,propertyName))
+                //{
+                //    return;
+                //}
 
 
                 if (!(ifCheckExp?.Invoke(context)??true))
@@ -119,15 +119,18 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
 
                     var value = valueFactory(context);
+                    
+                    context.Serializer.Serialize(writer,value);
 
-                    if (value != null)
-                    {
-                        await writer.WriteValueAsync(value, context.CancellationToken);
-                    }
-                    else
-                    {
-                        await writer.WriteNullAsync(context.CancellationToken);
-                    }
+                    //if (value != null)
+                    //{
+                    //    //await w context.JsonSerializerSettings.Converters
+                    //    await writer.WriteValueAsync(value, context.CancellationToken);
+                    //}
+                    //else
+                    //{
+                    //    await writer.WriteNullAsync(context.CancellationToken);
+                    //}
                 }
                 catch (Exception e)
                 {
@@ -144,6 +147,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             return this;
         }
+
+ 
 
         /// <summary>
         /// 添加一个object属性
@@ -169,7 +174,19 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
+                //if (!context.PropertyRenderChecker(context,propertyName))
+                //{
+                //    return;
+                //}
+
+
+                //if (!(ifCheckExp?.Invoke(context)??true))
+                //{
+                //    return;
+                //}
+
                 await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+                
             });
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
@@ -256,7 +273,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     foreach (var value in data)
                     {
-                        await writer.WriteValueAsync(value,context.CancellationToken);
+                        if (context.CancellationToken.IsCancellationRequested)
+                            break;
+
+                        context.Serializer.Serialize(writer,value);
+                        //await writer.WriteValueAsync(value,context.CancellationToken);
                     }
                 } 
 

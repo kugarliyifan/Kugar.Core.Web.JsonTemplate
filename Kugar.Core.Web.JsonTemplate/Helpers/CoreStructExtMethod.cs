@@ -106,7 +106,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(valueFactory));
             }
 
-            using (var b=builder.FromObject(valueFactory))
+            using (var b=builder.FromObject(x=>valueFactory(x)))
             {
                 b.AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount);
             }

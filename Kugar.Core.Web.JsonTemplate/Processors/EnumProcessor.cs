@@ -87,7 +87,7 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
                              .Where(x => x.GetAttribute("name") == $"F:{field.DeclaringType.FullName}.{Enum.GetName(enumType,v)}")
                              .FirstOrDefault();
 
-                         key = node.GetFirstElementsByTagName("summary").InnerText.Trim();
+                         key = node?.GetFirstElementsByTagName("summary")?.InnerText?.Trim()??"";
                      }
                      else
                      {

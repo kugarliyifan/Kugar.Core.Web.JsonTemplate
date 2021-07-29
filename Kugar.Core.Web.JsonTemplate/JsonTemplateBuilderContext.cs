@@ -34,6 +34,8 @@ namespace Kugar.Core.Web.JsonTemplate
         CancellationToken CancellationToken { get; }
 
         JsonSerializerSettings JsonSerializerSettings { get; }
+
+        JsonSerializer Serializer { get; }
         
         ILogger Logger { get; }
     }
@@ -47,7 +49,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         dynamic RootModel { get; }
 
-        Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { set; get; }
+        //Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { set; get; }
     }
 
     public interface IJsonArrayTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext<TModel>
@@ -72,6 +74,7 @@ namespace Kugar.Core.Web.JsonTemplate
             _loggerFactory = new Lazy<ILogger>(getLogger);
             _globalTemporaryData = globalTemporaryDataFactory ?? new Lazy<Dictionary<string, object>>();
             RootModel = rootModel;
+            Serializer= JsonSerializer.Create(JsonSerializerSettings);
             //GlobalScopeData = new ExpandoObject();
             //CancellationToken = context.RequestAborted;
         }
@@ -86,11 +89,12 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public dynamic RootModel  { get; }
 
-        public Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { get; set; }
+        //public Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { get; set; }
 
         public CancellationToken CancellationToken => HttpContext.RequestAborted;
 
         public JsonSerializerSettings JsonSerializerSettings { get; }
+        public JsonSerializer Serializer { get; }
 
         public ILogger Logger => _loggerFactory.Value;
             

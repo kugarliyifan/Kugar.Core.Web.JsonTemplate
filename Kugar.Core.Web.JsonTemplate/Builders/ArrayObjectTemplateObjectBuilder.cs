@@ -89,10 +89,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
-                if (!context.PropertyRenderChecker(context,propertyName))
-                {
-                    return;
-                }
+                //if (!context.PropertyRenderChecker(context,propertyName))
+                //{
+                //    return;
+                //}
 
                 if (!(ifCheckExp?.Invoke(context) ?? true))
                 {
@@ -103,14 +103,15 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 var value = valueFactory(context);
 
-                if (value != null)
-                {
-                    await writer.WriteValueAsync(value, context.CancellationToken);
-                }
-                else
-                {
-                    await writer.WriteNullAsync(context.CancellationToken);
-                }
+                context.Serializer.Serialize(writer,value);
+                //if (value != null)
+                //{
+                //    await writer.WriteValueAsync(value, context.CancellationToken);
+                //}
+                //else
+                //{
+                //    await writer.WriteNullAsync(context.CancellationToken);
+                //}
 
             });
 
@@ -189,16 +190,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
                     
-                    var value = valueFactory(context);
+                    var data = valueFactory(context);
 
                     await writer.WriteStartArrayAsync(context.CancellationToken);
                     
-                    if (value != null)
+                    if (data.HasData())
                     {
-                        
-                        foreach (var e in value)
+                        foreach (var value in data)
                         {
-                            await writer.WriteValueAsync(e, context.CancellationToken);
+                            context.Serializer.Serialize(writer,value);
+                            //await writer.WriteValueAsync(e, context.CancellationToken);
                         }
                     }
 
@@ -226,23 +227,33 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
                 var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings)
-                {
-                    PropertyRenderChecker = context.PropertyRenderChecker
-                });
+                //{
+                //    PropertyRenderChecker = context.PropertyRenderChecker
+                //}
+                );
 
-                if (array.HasData())
+                if (array?.HasData()??false)
                 {
                     foreach (var element in array)
                     {
                         await writer.WriteStartObjectAsync(context.CancellationToken);
 
                         var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
-                            PropertyRenderChecker = context.PropertyRenderChecker
+                            //PropertyRenderChecker = context.PropertyRenderChecker
                         };
 
                         foreach (var func in _pipe)
                         {
-                            await func(writer, newContext);
+                            try
+                            {
+                                await func(writer, newContext);
+                            }
+                            catch (Exception e)
+                            {
+                                Debugger.Break();
+                                throw;
+                            }
+                            
                         }
 
                         await writer.WriteEndObjectAsync(context.CancellationToken);

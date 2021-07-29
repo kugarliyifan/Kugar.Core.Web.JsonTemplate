@@ -82,7 +82,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 }
 
                 var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext,model, model,jsonSettings);
-                modelContext.PropertyRenderChecker = ((JsonTemplateBase<TModel>) objectBuilder).PropertyRenderCheck;
+                //modelContext.PropertyRenderChecker = ((JsonTemplateBase<TModel>) objectBuilder).PropertyRenderCheck;
 
                 foreach (var pipe in objectBuilder.Pipe)
                 {

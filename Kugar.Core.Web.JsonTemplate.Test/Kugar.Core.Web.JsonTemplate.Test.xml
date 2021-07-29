@@ -12,7 +12,7 @@
             <param name="int2">测试参数2</param>
             <returns></returns>
         </member>
-        <member name="M:Kugar.Core.Web.JsonTemplate.Test.Controllers.HomeController.Index4(System.String,System.Int32)">
+        <member name="M:Kugar.Core.Web.JsonTemplate.Test.Controllers.HomeController.Index4">
             <summary>
             sdfs
             </summary>

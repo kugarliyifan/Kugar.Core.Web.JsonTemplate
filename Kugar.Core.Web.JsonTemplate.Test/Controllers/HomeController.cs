@@ -65,8 +65,8 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         /// <param name="p1">222</param>
         /// <param name="o3">333</param>
         /// <returns></returns>
-        [HttpPost,FromBodyJson,ValidateRule, ProducesResponseType(typeof(ResultReturn<int>), 200)]
-        public async Task<IActionResult> Index4([Required]string p1,[Required]int o3)
+        [HttpGet, ProducesResponseType(typeof(ResultReturn<int>), 200)]
+        public async Task<IActionResult> Index4(/*[Required]string p1,[Required]int o3*/)
         {
             var t = new VM_PagedList<(Input input, AP ap)>(
                 Enumerable.Repeat(
@@ -123,13 +123,16 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
     {
         protected override void BuildReturnDataScheme(IChildObjectBuilder<IPagedList<(Input input, AP ap)>> builder)
         {
-            using (var b = builder.FromPagedList(x => x.Model))
+            using (var b = builder.FromPagedList(x => x.Model.Cast(y =>
             {
-                b.AddProperties(x => x.input.Ints,
-                        x => x.input.Strr,
-                        x => x.ap.int2,
-                        x => x.ap.str2,
-                        x => x.ap.str3);
+                return (Item: y.input,AP: y.ap);
+            })))
+            {
+                b.AddProperties(x => x.Item.Ints,
+                        x => x.Item.Strr,
+                        x => x.AP.int2,
+                        x => x.AP.str2,
+                        x => x.AP.str3);
             }
         }
     }

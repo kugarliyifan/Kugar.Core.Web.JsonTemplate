@@ -72,7 +72,7 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
                         var tmp = paramXmlNodes.FirstOrDefault(x => x.GetAttribute("name") == p1.Value.Name)
                             .InnerText;
 
-                        if (tmp.Length > description.Length)
+                        if (tmp.Length > (description?.Length??0))
                         {
                             description = tmp;
                         }

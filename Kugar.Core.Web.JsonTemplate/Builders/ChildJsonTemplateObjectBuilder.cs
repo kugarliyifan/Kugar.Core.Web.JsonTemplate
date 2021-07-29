@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Kugar.Core.ExtMethod;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
@@ -97,10 +98,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             _pipe.Add(async (writer, context) =>
             {
-                if (!context.PropertyRenderChecker(context,propertyName))
-                {
-                    return;
-                }
+                //if (!context.PropertyRenderChecker(context,propertyName))
+                //{
+                //    return;
+                //}
 
                 if (!(ifCheckExp?.Invoke(context) ?? true))
                 {
@@ -112,15 +113,17 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
 
                     var value = valueFactory(context);
+                    
+                    context.Serializer.Serialize(writer,value);
 
-                    if (value != null)
-                    {
-                        await writer.WriteValueAsync(value, context.CancellationToken);
-                    }
-                    else
-                    {
-                        await writer.WriteNullAsync(context.CancellationToken);
-                    }
+                    //if (value != null)
+                    //{
+                    //    await writer.WriteValueAsync(value, context.CancellationToken);
+                    //}
+                    //else
+                    //{
+                    //    await writer.WriteNullAsync(context.CancellationToken);
+                    //}
                 }
                 catch (Exception e)
                 {
@@ -210,7 +213,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     foreach (var value in data)
                     {
-                        await writer.WriteValueAsync(value);
+                        context.Serializer.Serialize(writer,value);
+                        //await writer.WriteValueAsync(value);
                     }
                 }
 
@@ -247,6 +251,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             
             _parent.Pipe.Add(async (writer, context) =>
             {
+                if (_isNewObject && writer.WriteState!= WriteState.Property)
+                {
+                    return;
+                }
+
                 var value = _childObjFactory(context);
 
                 if (_isNewObject)
@@ -255,15 +264,25 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 }
                 
                 var c=(JsonTemplateBuilderContext<TParentModel>)context;
+                
 
                 var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData)
                 {
-                    PropertyRenderChecker = context.PropertyRenderChecker
+                    //PropertyRenderChecker = context.PropertyRenderChecker
                 };
 
                 foreach (var builder in _pipe)
                 {
-                    await builder(writer, newContext);
+                    try
+                    {
+                        await builder(writer, newContext);
+                    }
+                    catch (Exception e)
+                    {
+                        Debugger.Break();
+                        throw;
+                    }
+                    
                 }
 
                 if (_isNewObject)
