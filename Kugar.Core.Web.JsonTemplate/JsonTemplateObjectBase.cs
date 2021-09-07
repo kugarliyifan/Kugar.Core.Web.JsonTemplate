@@ -32,7 +32,7 @@ namespace Kugar.Core.Web.JsonTemplate
         /// <param name="model"></param>
         /// <param name="propertyName"></param>
         /// <returns></returns>
-        public virtual bool PropertyRenderCheck(IJsonTemplateBuilderContext model, string propertyName)
+        protected virtual bool PropertyRenderCheck(IJsonTemplateBuilderContext model, string propertyName)
         {
             return true;
         }

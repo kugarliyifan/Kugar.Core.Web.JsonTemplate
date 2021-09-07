@@ -54,6 +54,11 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             return _defaultResultFactory(context);
         }
 
+        /// <summary>
+        /// 对输入的数据进行整理
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
         protected virtual IEnumerable<TElement> HandleList(IEnumerable<TElement> src)
         {
             return src;
