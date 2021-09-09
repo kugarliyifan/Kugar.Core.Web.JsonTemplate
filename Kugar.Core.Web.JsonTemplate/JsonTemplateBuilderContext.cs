@@ -18,13 +18,13 @@ namespace Kugar.Core.Web.JsonTemplate
         /// <summary>
         /// 本次输出范围内的临时数据,ChildObject则为子对象整个输出的范围内,,如果是ObjecrArray则为整个数组对象的输出范围内
         /// </summary>
-        Dictionary<string, object> ScopeTemporaryData { get; }
+        TemplateData ScopeTemporaryData { get; }
         
 
         /// <summary>
         /// 单个Request输出的范围内的临时数据
         /// </summary>
-        Dictionary<string, object>  GlobalTemporaryData { get; }
+        TemplateData  GlobalTemporaryData { get; }
 
        
 
@@ -62,17 +62,17 @@ namespace Kugar.Core.Web.JsonTemplate
 
     internal class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
     {
-        private Lazy<Dictionary<string, object>> _temporaryData = new Lazy<Dictionary<string, object>>();
-        internal Lazy<Dictionary<string, object>> _globalTemporaryData = null;
+        private Lazy<TemplateData> _temporaryData = new Lazy<TemplateData>();
+        internal Lazy<TemplateData> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(Microsoft.AspNetCore.Http.HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<Dictionary<string,object>> globalTemporaryDataFactory=null)
+        public JsonTemplateBuilderContext(Microsoft.AspNetCore.Http.HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<TemplateData> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
             JsonSerializerSettings = settings;
             _loggerFactory = new Lazy<ILogger>(getLogger);
-            _globalTemporaryData = globalTemporaryDataFactory ?? new Lazy<Dictionary<string, object>>();
+            _globalTemporaryData = globalTemporaryDataFactory ?? new Lazy<TemplateData>();
             RootModel = rootModel;
             Serializer= JsonSerializer.Create(JsonSerializerSettings);
             //GlobalScopeData = new ExpandoObject();
@@ -81,9 +81,9 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { get; }
 
-        public Dictionary<string, object> ScopeTemporaryData => _temporaryData.Value;
+        public TemplateData ScopeTemporaryData => _temporaryData.Value;
 
-        public Dictionary<string, object> GlobalTemporaryData => _globalTemporaryData.Value;
+        public TemplateData GlobalTemporaryData => _globalTemporaryData.Value;
 
         public TModel Model { get; set; }
 
@@ -102,6 +102,42 @@ namespace Kugar.Core.Web.JsonTemplate
         private ILogger getLogger()=>((ILoggerFactory) HttpContext.RequestServices.GetService(typeof(ILoggerFactory))).CreateLogger(
             "jsontemplate");
 
+    }
+
+    public class TemplateData
+    {
+        private Dictionary<string, object> _data = new Dictionary<string, object>();
+
+        public TValue Get<TValue>(string key)
+        {
+            if (_data.TryGetValue(key,out var data))
+            {
+                return (TValue)data;
+            }
+            else
+            {
+                return default;
+            }
+        }
+
+        public TemplateData Set<TValue>(string key, TValue value)
+        {
+            if (_data.ContainsKey(key))
+            {
+                _data[key] = value;
+            }
+            else
+            {
+                _data.Add(key,value);
+            }
+
+            return this;
+        }
+
+        public void Remove(string key)
+        {
+            _data.Remove(key);  
+        }
     }
 
     //internal class JsonArrayTemplateBuilderContext<TModel> : JsonTemplateBuilderContext<TModel>,

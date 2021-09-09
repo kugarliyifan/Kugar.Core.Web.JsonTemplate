@@ -102,8 +102,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(objectFactory));
             }
 
-            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
-                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
+            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>("",builder,
+                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,isNewObject: false).Start();
         }
 
         /// <summary>

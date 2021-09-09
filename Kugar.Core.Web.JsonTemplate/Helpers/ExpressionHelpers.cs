@@ -115,6 +115,30 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             throw new ArgumentException();
         }
 
+        public static MemberExpression GetMemberExpr<T1, T2>(Expression<Func<IJsonTemplateBuilderContext<T1>, T2>> expression)
+        {
+            if (expression.Body.NodeType == ExpressionType.Convert)
+            {
+                var p = expression.Body as UnaryExpression;
+
+                if (p.Operand is MemberExpression m1)
+                {
+                    return m1;
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException(nameof(expression), $"表达式{expression.Body.ToString()}无效");
+                }
+
+            }
+            else if (expression.Body is MemberExpression m)
+            {
+                return m;
+            }
+
+            throw new ArgumentException();
+        }
+
         public static string GetMemberDescription(MemberExpression expr)
         {
             var propertyName =$"{expr.Member.DeclaringType.Namespace}.{expr.Member.DeclaringType.Name}.{expr.Member.Name}";

@@ -142,8 +142,10 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
         )
         {
-            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(builder,
-                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,false).Start();
+            return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(
+                "",
+                builder,
+                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,isNewObject:false).Start();
         }
 
         

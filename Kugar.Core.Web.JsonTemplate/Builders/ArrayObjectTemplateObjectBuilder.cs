@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 using NJsonSchema;
 using NJsonSchema.Annotations;
 using NJsonSchema.Generation;
@@ -30,11 +32,21 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
         );
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TArrayNewElement"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="valueFactory"></param>
+        /// <param name="isNull"></param>
+        /// <param name="description"></param>
+        /// <param name="ifCheckExp">对数组中每个数据项进行检查,如果返回false,则不输出该数据项</param>
+        /// <returns></returns>
         IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(string propertyName,
             Func<IJsonTemplateBuilderContext<TElement>, IEnumerable<TArrayNewElement>> valueFactory,
             bool isNull = false,
-            string description = ""//,
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            string description = "" ,
+            Func<IJsonTemplateBuilderContext<TArrayNewElement>, bool> ifCheckExp = null
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
@@ -46,6 +58,14 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
+        public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
+            Expression<Func<TElement, TValue>> objectPropertyExp)
+        {
+            var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
+            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+
+            return (name, desc);
+        }
 
         IArrayBuilder<TElement> End();
     }
@@ -55,13 +75,15 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         private List<PipeActionBuilder<TElementModel>> _pipe = new List<PipeActionBuilder<TElementModel>>();
         private Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
         private IList<PipeActionBuilder<TParentModel>> _parent = null;
+        private Func<IJsonTemplateBuilderContext<TElementModel>, bool> _ifCheckExp = null;
 
         public ArrayObjectTemplateObjectBuilder(
             IObjectBuilderPipe<TParentModel> parent,
             [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
-            JsonSchemaResolver resolver
+            JsonSchemaResolver resolver,
+            Func<IJsonTemplateBuilderContext<TElementModel>, bool> ifCheckExp = null
         )
         {
             _arrayValueFactory = arrayValueFactory;
@@ -69,6 +91,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             this.SchemaBuilder = schemeBuilder;
             this.Generator = generator;
             this.Resolver = resolver;
+            _ifCheckExp = ifCheckExp;
         }
         
 
@@ -137,14 +160,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             //SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            _pipe.Add(async (writer, context) =>
-            {
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-            });
+            //_pipe.Add(async (writer, context) =>
+            //{
+            //    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+            //});
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TElementModel, TChildModel>(this,
+            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TElementModel, TChildModel>(
+                propertyName,
+                this,
                 valueFactory,
                 childSchemeBuilder,
                 Generator,
@@ -156,7 +181,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             string propertyName, 
             Func<IJsonTemplateBuilderContext<TElementModel>, IEnumerable<TArrayNewElement>> valueFactory, 
             bool isNull = false,
-            string description = "")
+            string description = "",
+            Func<IJsonTemplateBuilderContext<TArrayNewElement>, bool> ifCheckExp = null)
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
@@ -174,7 +200,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver);
+            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver,ifCheckExp);
 
             return s;
         }
@@ -236,12 +262,17 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     foreach (var element in array)
                     {
-                        await writer.WriteStartObjectAsync(context.CancellationToken);
-
                         var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
                             //PropertyRenderChecker = context.PropertyRenderChecker
                         };
 
+                        if (!(_ifCheckExp?.Invoke(newContext)??true))
+                        {
+                            continue;
+                        }
+
+                        await writer.WriteStartObjectAsync(context.CancellationToken);
+                        
                         foreach (var func in _pipe)
                         {
                             try

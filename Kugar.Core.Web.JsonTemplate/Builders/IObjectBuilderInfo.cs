@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq.Expressions;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
@@ -13,5 +15,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public JsonSchemaResolver Resolver { get; }
 
         public Type ModelType { get; }
+
+        
     }
 }

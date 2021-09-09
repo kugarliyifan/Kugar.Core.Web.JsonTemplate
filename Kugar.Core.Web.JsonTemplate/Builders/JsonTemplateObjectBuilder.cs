@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Log;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 using Microsoft.Extensions.Logging;
 using NJsonSchema;
 using NJsonSchema.Generation;
@@ -30,16 +32,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
-            string description = ""//,
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null
+            string description = "",
+            Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifNullRender = null
         );
 
         IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
-            string description = ""//,
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
+            string description = "" ,
+            Func<IJsonTemplateBuilderContext<TArrayElement>, bool> ifCheckExp = null //,
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
         );
 
@@ -55,6 +57,23 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         IList<PipeActionBuilder<TModel>> Pipe { get; }
 
+        public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
+            Expression<Func<TModel, TValue>> objectPropertyExp)
+        {
+            var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
+            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+
+            return (name, desc);
+        }
+
+        public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
+            Expression<Func<IJsonTemplateBuilderContext<TModel>, TValue>> objectPropertyExp)
+        {
+            var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
+            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+
+            return (name, desc);
+        }
     }
 
     public delegate bool IfCheckCallback<TModel>(IJsonTemplateBuilderContext<TModel> context, string propertyName);
@@ -162,7 +181,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
-            string description = ""
+            string description = "",
+            Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null 
+            //Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
             )
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
@@ -172,32 +193,34 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             //SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            _pipe.Add(async (writer, context) =>
-            {
-                //if (!context.PropertyRenderChecker(context,propertyName))
-                //{
-                //    return;
-                //}
+            //_pipe.Add(async (writer, context) =>
+            //{
+            //    //if (!context.PropertyRenderChecker(context,propertyName))
+            //    //{
+            //    //    return;
+            //    //}
 
 
-                //if (!(ifCheckExp?.Invoke(context)??true))
-                //{
-                //    return;
-                //}
+            //    //if (!(ifCheckExp?.Invoke(context) ?? true))
+            //    //{ 
+            //    //    return;
+            //    //}
 
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+            //    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
                 
-            });
+            //});
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(this,
+            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(
+                propertyName,
+                this,
                 valueFactory,
                 childSchemeBuilder,
                 Generator,
                 Resolver,
-                isNewObject: true//,
-                //ifCheckExp:ifCheckExp,
+                isNewObject: true ,
+                ifCheckExp:ifCheckExp
                 /*ifNullRender:ifNullRender*/).Start();
         }
 
@@ -209,13 +232,14 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="valueFactory">获取值的方法</param>
         /// <param name="isNull">是否允许为null</param>
         /// <param name="description">备注</param>
-        /// <param name="ifNullRender">如果值为null,是否继续调用输出,为true时,继续调用各种参数回调,,为false时,直接输出null</param>
+        /// <param name="ifCheckExp">对数组中每个数据项进行检查,如果返回false,则不输出该数据项</param>
         /// <returns></returns>
         public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(
             string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
-            string description = ""//,
+            string description = "",
+            Func<IJsonTemplateBuilderContext<TArrayElement>, bool> ifCheckExp = null 
             //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
             )
         {
@@ -235,7 +259,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver);
+            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver,ifCheckExp:ifCheckExp);
 
             return s;
         }
