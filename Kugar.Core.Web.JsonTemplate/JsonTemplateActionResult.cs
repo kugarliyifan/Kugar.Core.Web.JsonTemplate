@@ -73,12 +73,20 @@ namespace Kugar.Core.Web.JsonTemplate
                 {
                     var logger = (ILogger) context.HttpContext.RequestServices.GetService(typeof(ILogger));
                     logger.Log(LogLevel.Error,"格式转换出错",e);
-                    throw new Exception("格式转换出错", e);
+
+                    await Task.FromException(new Exception("格式转换出错", e));
+
+                    return;
+
+                    //throw new Exception("格式转换出错", e);
                 }
                 
                 if (model==null)
                 {
-                    throw new ArgumentNullException(nameof(model), $"model转换为{typeof(TModel).Name}失败,请检查传入的model的类型");
+                    await Task.FromException(new ArgumentNullException(nameof(model),
+                        $"model转换为{typeof(TModel).Name}失败,请检查传入的model的类型"));
+                    return;
+                    //throw new ArgumentNullException(nameof(model), $"model转换为{typeof(TModel).Name}失败,请检查传入的model的类型");
                 }
 
                 var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext,model, model,jsonSettings);
@@ -95,9 +103,12 @@ namespace Kugar.Core.Web.JsonTemplate
                         var logger = (ILogger) context.HttpContext.RequestServices.GetService(typeof(ILogger));
                         logger.Log(LogLevel.Error,"piple函数执行出错",e);
 
+                        context.HttpContext.Response.StatusCode = 500;
+                        
+
                         await Task.FromException(e);
                      
-                        throw;
+                        //throw;
                     }
                     
                 }

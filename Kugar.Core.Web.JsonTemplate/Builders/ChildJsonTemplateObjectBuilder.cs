@@ -58,15 +58,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             return (name, desc);
         }
-
-        public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
-            Expression<Func<IJsonTemplateBuilderContext<TCurrentModel>, TValue>> objectPropertyExp)
-        {
-            var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
-
-            return (name, desc);
-        }
+        
     }
     
     
@@ -318,30 +310,36 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     await writer.WritePropertyNameAsync(_propertyName, context.CancellationToken);
                 }
                 
-                if (_isNewObject)
-                {
-                    await writer.WriteStartObjectAsync(context.CancellationToken);
-                }
-                
                 
 
-                foreach (var builder in _pipe)
+                if (value!=null)
                 {
-                    try
+                    if (_isNewObject)
                     {
-                        await builder(writer, newContext);
+                        await writer.WriteStartObjectAsync(context.CancellationToken);
                     }
-                    catch (Exception e)
-                    {
-                        Debugger.Break();
-                        throw;
-                    }
-                    
-                }
 
-                if (_isNewObject)
+                    foreach (var builder in _pipe)
+                    {
+                        try
+                        {
+                            await builder(writer, newContext);
+                        }
+                        catch (Exception e)
+                        {
+                            Debugger.Break();
+                            throw;
+                        }
+                    }
+
+                    if (_isNewObject)
+                    {
+                        await writer.WriteEndObjectAsync(context.CancellationToken);
+                    }
+                }
+                else
                 {
-                    await writer.WriteEndObjectAsync(context.CancellationToken);
+                    await writer.WriteNullAsync();
                 }
             });
             

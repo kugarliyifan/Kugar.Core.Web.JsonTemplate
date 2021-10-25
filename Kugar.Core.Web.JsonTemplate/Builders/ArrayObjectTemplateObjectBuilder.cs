@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Helpers;
+using Microsoft.Extensions.Options;
 using NJsonSchema;
 using NJsonSchema.Annotations;
 using NJsonSchema.Generation;
@@ -250,6 +251,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             _parent.Add(async (writer, context) =>
             {
+                var option =
+                    (IOptions<JsonTemplateOption>)context.HttpContext.RequestServices.GetService(
+                        typeof(IOptions<JsonTemplateOption>));
+
+
+
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
                 var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings)

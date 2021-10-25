@@ -59,7 +59,16 @@ namespace Kugar.Core.Web.JsonTemplate
             GlobalJsonTemplateCache.Provider = app.ApplicationServices;
         }
 
+        public static IServiceCollection AddJsonTemplateOptions(this IServiceCollection services,JsonTemplateOption options)
+        {
+            services.AddOptions<JsonTemplateOption>().Configure((s) =>
+            {
+                s.NullArrayFormatting = options.NullArrayFormatting;
+                s.NullObjectFormatting = options.NullObjectFormatting;
+            });
 
+            return services;
+        }
 
         public static IServiceCollection EnableSyncIO(this IServiceCollection services)
         {
