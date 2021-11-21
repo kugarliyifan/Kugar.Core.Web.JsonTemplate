@@ -31,11 +31,11 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
         )
         {
-            if (objectPropertyExp==null)
+            if (objectPropertyExp == null)
             {
                 throw new ArgumentNullException(nameof(objectPropertyExp));
             }
-            
+
             if (string.IsNullOrEmpty(newPropertyName))
             {
                 newPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
@@ -49,7 +49,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
-            
+
 
             return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
                 ifCheckExp);
@@ -63,7 +63,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="objectPropertyExpList">属性表达式</param>
         /// <returns></returns>
         public static IChildObjectBuilder<TModel> AddProperties<TModel>(
-            this IChildObjectBuilder< TModel> builder,
+            this IChildObjectBuilder<TModel> builder,
             params Expression<Func<TModel, object>>[] objectPropertyExpList
         )
         {
@@ -72,7 +72,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 var returnType = ExpressionHelpers.GetExprReturnType(item);
 
                 var propertyName = ExpressionHelpers.GetExporessionPropertyName(item);
-                
+
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
@@ -81,7 +81,15 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
 
 
-                builder.AddProperty(propertyName, (context) => invoker(context.Model), description, newValueType: returnType);
+                builder.AddProperty(propertyName, (context) =>
+                {
+
+                    if (context.Model == null) return null;
+
+                    return invoker(context.Model);
+
+
+                }, description, newValueType: returnType);
             }
 
             return builder;
@@ -95,11 +103,11 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static IChildObjectBuilder< TNewObject> FromObject<TChildModel, TNewObject>(this IChildObjectBuilder<TChildModel> builder,
+        public static IChildObjectBuilder<TNewObject> FromObject<TChildModel, TNewObject>(this IChildObjectBuilder<TChildModel> builder,
             Func<IJsonTemplateBuilderContext<TChildModel>, TNewObject> objectFactory
         )
         {
-            if (objectFactory==null)
+            if (objectFactory == null)
             {
                 throw new ArgumentNullException(nameof(objectFactory));
             }
@@ -107,11 +115,11 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TChildModel, TNewObject>(
                 "",
                 builder,
-                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,isNewObject: false).Start();
+                objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }
 
 
-        
+
 
         /// <summary>
         /// 将json中微支付所需的参数输出
@@ -123,20 +131,20 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         public static IChildObjectBuilder<TModel> FromWechatPayProperties<TModel>(this IChildObjectBuilder<TModel> builder,
             Func<IJsonTemplateBuilderContext<TModel>, JObject> objectFactory)
         {
-            if (objectFactory==null)
+            if (objectFactory == null)
             {
                 throw new ArgumentNullException(nameof(objectFactory));
             }
 
-            using (var b=builder.FromObject(objectFactory))
+            using (var b = builder.FromObject(objectFactory))
             {
-                b.AddProperty("appId",x=>x.Model.GetString("appId","",StringComparison.CurrentCultureIgnoreCase),"公众号/小程序的AppId")
-                    .AddProperty("timeStamp",x=>x.Model.GetString("timeStamp","",StringComparison.CurrentCultureIgnoreCase),"支付时间戳")
-                    .AddProperty("nonceStr",x=>x.Model.GetString("nonceStr","",StringComparison.CurrentCultureIgnoreCase),"")
-                    .AddProperty("package",x=>x.Model.GetString("package","",StringComparison.CurrentCultureIgnoreCase),"")
-                    .AddProperty("signType",x=>x.Model.GetString("signType","",StringComparison.CurrentCultureIgnoreCase),"签名类型")
-                    .AddProperty("paySign",x=>x.Model.GetString("paySign","",StringComparison.CurrentCultureIgnoreCase),"签名")
-                    .AddProperty("total_fee",x=>x.Model.GetString("total_fee","",StringComparison.CurrentCultureIgnoreCase),"支付金额",ifCheckExp:x=>x.Model.ContainsKey("total_fee"))
+                b.AddProperty("appId", x => x.Model.GetString("appId", "", StringComparison.CurrentCultureIgnoreCase), "公众号/小程序的AppId")
+                    .AddProperty("timeStamp", x => x.Model.GetString("timeStamp", "", StringComparison.CurrentCultureIgnoreCase), "支付时间戳")
+                    .AddProperty("nonceStr", x => x.Model.GetString("nonceStr", "", StringComparison.CurrentCultureIgnoreCase), "")
+                    .AddProperty("package", x => x.Model.GetString("package", "", StringComparison.CurrentCultureIgnoreCase), "")
+                    .AddProperty("signType", x => x.Model.GetString("signType", "", StringComparison.CurrentCultureIgnoreCase), "签名类型")
+                    .AddProperty("paySign", x => x.Model.GetString("paySign", "", StringComparison.CurrentCultureIgnoreCase), "签名")
+                    .AddProperty("total_fee", x => x.Model.GetString("total_fee", "", StringComparison.CurrentCultureIgnoreCase), "支付金额", ifCheckExp: x => x.Model.ContainsKey("total_fee"))
                     ;
             }
 

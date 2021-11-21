@@ -26,7 +26,7 @@ namespace Kugar.Core.Web.JsonTemplate
         /// </summary>
         TemplateData  GlobalTemporaryData { get; }
 
-       
+        string PropertyName { set; get; }
 
         /// <summary>
         /// Request上的RequestAborted通知
@@ -97,7 +97,8 @@ namespace Kugar.Core.Web.JsonTemplate
         public JsonSerializer Serializer { get; }
 
         public ILogger Logger => _loggerFactory.Value;
-            
+
+        public string PropertyName { set; get; }
 
         private ILogger getLogger()=>((ILoggerFactory) HttpContext.RequestServices.GetService(typeof(ILoggerFactory))).CreateLogger(
             "jsontemplate");

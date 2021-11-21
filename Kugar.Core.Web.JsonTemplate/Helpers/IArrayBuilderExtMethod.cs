@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
             )
         {
-            if (objectPropertyExp==null)
+            if (objectPropertyExp == null)
             {
                 throw new ArgumentNullException(nameof(objectPropertyExp));
             }
@@ -49,7 +49,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
 
-            return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example,typeof(TValue),
+            return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
                 ifCheckExp);
         }
 
@@ -69,16 +69,29 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             {
                 var returnType = ExpressionHelpers.GetExprReturnType(item);
 
-                var propertyName=ExpressionHelpers.GetExporessionPropertyName(item);
+                var propertyName = ExpressionHelpers.GetExporessionPropertyName(item);
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
                 var invoker = item.Compile();
 
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
-                
 
-                builder.AddProperty(propertyName, (context) => invoker(context.Model), description,newValueType:returnType);
+
+                builder.AddProperty(propertyName, (context) =>
+                {
+                    try
+                    {
+                        if (context.Model == null) return null;
+
+                        return invoker(context.Model);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw;
+                    }
+
+                }, description, newValueType: returnType);
             }
 
             return builder;
@@ -95,7 +108,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="isNull">是否允许为null</param>
         /// <param name="newPropertyName">新属性名,如果需要修改objectPropertyExp输出的属性,则传入该参数</param>
         /// <returns></returns>
-        public static IArrayBuilder<TModel> AddArrayValue<TModel,TValue>(
+        public static IArrayBuilder<TModel> AddArrayValue<TModel, TValue>(
             this IArrayBuilder<TModel> builder,
             Expression<Func<TModel, IEnumerable<TValue>>> objectPropertyExp,
             string description = "",
@@ -103,9 +116,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             string newPropertyName = null
         )
         {
-            
 
-            if (objectPropertyExp==null)
+
+            if (objectPropertyExp == null)
             {
                 throw new ArgumentNullException(nameof(objectPropertyExp));
             }
@@ -129,7 +142,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
         }
 
-        
+
         /// <summary>
         /// 从objectFactory返回的对象中读取属性,与AddObject不同的是,FromObject不会添加新的属性,而是在当前对象中添加
         /// </summary>
@@ -145,9 +158,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(
                 "",
                 builder,
-                objectFactory,builder.SchemaBuilder,builder.Generator,builder.Resolver,isNewObject:false).Start();
+                objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }
 
-        
+
     }
 }

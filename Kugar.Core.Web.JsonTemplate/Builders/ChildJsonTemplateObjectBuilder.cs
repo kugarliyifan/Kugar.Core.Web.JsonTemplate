@@ -212,7 +212,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TCurrentModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver,ifCheckExp);
+            var s = new ArrayObjectTemplateObjectBuilder<TCurrentModel, TArrayElement>(propertyName, this, valueFactory, s1, Generator, Resolver,ifCheckExp);
 
             return s;
         }
@@ -298,6 +298,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext,context.RootModel, value,context.JsonSerializerSettings,c._globalTemporaryData)
                 {
                     //PropertyRenderChecker = context.PropertyRenderChecker
+                    PropertyName=_propertyName
                 };
 
                 if (!(_ifCheckExp?.Invoke(newContext)??true))

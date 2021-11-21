@@ -77,8 +77,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         private Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
         private IList<PipeActionBuilder<TParentModel>> _parent = null;
         private Func<IJsonTemplateBuilderContext<TElementModel>, bool> _ifCheckExp = null;
+        private string _propertyName = "";
 
         public ArrayObjectTemplateObjectBuilder(
+            string properyName,
             IObjectBuilderPipe<TParentModel> parent,
             [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
@@ -93,6 +95,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             this.Generator = generator;
             this.Resolver = resolver;
             _ifCheckExp = ifCheckExp;
+            _propertyName = properyName;
         }
         
 
@@ -201,7 +204,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(this, valueFactory, s1, Generator, Resolver,ifCheckExp);
+            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(propertyName,this, valueFactory, s1, Generator, Resolver,ifCheckExp);
 
             return s;
         }
@@ -259,10 +262,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 await writer.WriteStartArrayAsync(context.CancellationToken);
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext,context.RootModel, context.Model,context.JsonSerializerSettings)
-                //{
-                //    PropertyRenderChecker = context.PropertyRenderChecker
-                //}
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.RootModel, context.Model, context.JsonSerializerSettings)
+                {
+
+                    PropertyName = _propertyName
+                }
                 );
 
                 if (array?.HasData()??false)
@@ -271,6 +275,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     {
                         var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
                             //PropertyRenderChecker = context.PropertyRenderChecker
+                            PropertyName = _propertyName
                         };
 
                         if (!(_ifCheckExp?.Invoke(newContext)??true))

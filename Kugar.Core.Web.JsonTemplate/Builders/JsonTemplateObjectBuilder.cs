@@ -259,7 +259,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(this, valueFactory, s1, Generator, Resolver,ifCheckExp:ifCheckExp);
+            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(propertyName, this, valueFactory, s1, Generator, Resolver,ifCheckExp:ifCheckExp);
 
             return s;
         }
