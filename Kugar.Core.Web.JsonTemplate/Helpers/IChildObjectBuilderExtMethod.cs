@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Builders;
+using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Newtonsoft.Json.Linq;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers
@@ -41,18 +42,34 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 newPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
             }
 
-            //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
-
-            var invoker = objectPropertyExp.Compile();
-
             if (string.IsNullOrEmpty(description))
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
 
+            var tmp = new PropertyExpInvoker<TModel, TValue>(newPropertyName, objectPropertyExp);
 
-            return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
+            return builder.AddProperty(newPropertyName, tmp.Invoke, description, isNull, example, typeof(TValue),
                 ifCheckExp);
+
+
+            //return builder.AddProperty(newPropertyName, (context) =>
+            //    {
+            //        var displayName = $"{context.PropertyName}.{newPropertyName}";
+
+            //        context.PropertyName = newPropertyName;
+
+            //        if (context.Model == null)
+            //        {
+            //            throw new OutputRenderException(context, "传入的Model为null")
+            //            {
+            //                DisplayPropertyPath = displayName
+            //            };
+            //        }
+
+            //        return invoker(context.Model);
+            //    }, description, isNull, example, typeof(TValue),
+            //    ifCheckExp);
         }
 
         /// <summary>
@@ -76,20 +93,13 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
-                var invoker = item.Compile();
+                //var invoker = item.Compile();
 
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
 
-
-                builder.AddProperty(propertyName, (context) =>
-                {
-
-                    if (context.Model == null) return null;
-
-                    return invoker(context.Model);
-
-
-                }, description, newValueType: returnType);
+                var tmp = new PropertyExpInvoker<TModel, object>(propertyName, item);
+                
+                builder.AddProperty(propertyName, tmp.Invoke, description, newValueType: returnType);
             }
 
             return builder;
@@ -114,6 +124,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TChildModel, TNewObject>(
                 "",
+                builder.DisplayPropertyName,
                 builder,
                 objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }
@@ -149,6 +160,44 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             }
 
             return builder;
+        }
+    }
+
+    internal class PropertyExpInvoker<TModel, TValue>
+    {
+        private Func<TModel, TValue> _invoke = null;
+
+        public string NewPropertyName { set; get; }
+
+        public Expression<Func<TModel, TValue>> objectPropertyExp { set; get; }
+
+        public PropertyExpInvoker(string newPropertyName, Expression<Func<TModel, TValue>> prop)
+        {
+            if (string.IsNullOrEmpty(newPropertyName))
+            {
+                NewPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+            }
+
+            _invoke = objectPropertyExp.Compile();
+
+            
+        }
+
+        public TValue Invoke(IJsonTemplateBuilderContext<TModel> context)
+        {
+            var displayName = $"{context.PropertyName}.{NewPropertyName}";
+
+            context.PropertyName = displayName;
+
+            if (context.Model == null)
+            {
+                throw new OutputRenderException(context, "传入的Model为null")
+                {
+                    DisplayPropertyPath = displayName
+                };
+            }
+
+            return _invoke(context.Model);
         }
     }
 }

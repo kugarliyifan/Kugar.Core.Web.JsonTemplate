@@ -43,14 +43,16 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
-            var invoker = objectPropertyExp.Compile();
+            //var invoker = objectPropertyExp.Compile();
 
             if (string.IsNullOrEmpty(description))
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
 
-            return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
+            var tmp = new PropertyExpInvoker<TModel, TValue>(newPropertyName, objectPropertyExp);
+
+            return builder.AddProperty(newPropertyName, tmp.Invoke, description, isNull, example, typeof(TValue),
                 ifCheckExp);
         }
 
@@ -74,18 +76,14 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
-                var invoker = item.Compile();
+                //var invoker = item.Compile();
 
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
 
+                var tmp = new PropertyExpInvoker<TModel, object>(propertyName, item);
 
-                builder.AddProperty(propertyName, (context) =>
-                {
+                builder.AddProperty(propertyName, tmp.Invoke, description, newValueType: returnType);
 
-                    if (context.Model == null) return null;
-
-                    return invoker(context.Model);
-                }, description, newValueType: returnType);
             }
 
             return builder;
@@ -108,7 +106,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(objectFactory));
             }
 
-            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>("", builder,
+            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>("","", builder,
                 objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }
 

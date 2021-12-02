@@ -54,9 +54,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         IArrayBuilder<TElement> AddArrayValue<TValue>(string propertyName,
             Func<IJsonTemplateBuilderContext<TElement>, IEnumerable<TValue>> valueFactory,
             bool isNull = false,
-            string description = ""//,
+            string description = "" ,
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            //Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
+            Func<IJsonTemplateBuilderContext<IEnumerable<TValue>>, bool> ifNullRender = null
         );
 
         public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
@@ -69,6 +69,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
 
         IArrayBuilder<TElement> End();
+
+        public string DisplayPropertyName { get; }
+
+        public string PropertyName { get; }
     }
 
     internal class ArrayObjectTemplateObjectBuilder<TParentModel, TElementModel> : IArrayBuilder<TElementModel>,IObjectBuilderPipe<TElementModel>
@@ -78,9 +82,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         private IList<PipeActionBuilder<TParentModel>> _parent = null;
         private Func<IJsonTemplateBuilderContext<TElementModel>, bool> _ifCheckExp = null;
         private string _propertyName = "";
+        private string _displayPropertyName = "";
 
         public ArrayObjectTemplateObjectBuilder(
             string properyName,
+            string displayPropertyName,
             IObjectBuilderPipe<TParentModel> parent,
             [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
@@ -96,6 +102,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             this.Resolver = resolver;
             _ifCheckExp = ifCheckExp;
             _propertyName = properyName;
+            _displayPropertyName = displayPropertyName;
         }
         
 
@@ -114,33 +121,54 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            _pipe.Add(async (writer, context) =>
+            var propertyInvoke = new PropertyInvoker<TElementModel, TValue>()
             {
-                //if (!context.PropertyRenderChecker(context,propertyName))
-                //{
-                //    return;
-                //}
+                ifCheckExp = ifCheckExp,
+                ParentDisplayName = _displayPropertyName,
+                PropertyName = propertyName,
+                valueFactory = valueFactory
+            };
 
-                if (!(ifCheckExp?.Invoke(context) ?? true))
-                {
-                    return;
-                }
+            _pipe.Add(propertyInvoke.Invoke);
 
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+            //_pipe.Add((writer, context) =>
+            //{
+            //    //if (!context.PropertyRenderChecker(context,propertyName))
+            //    //{
+            //    //    return;
+            //    //}
 
-                var value = valueFactory(context);
+            //    try
+            //    {
+            //        context.PropertyName = $"{_displayPropertyName}.{propertyName}";
 
-                context.Serializer.Serialize(writer,value);
-                //if (value != null)
-                //{
-                //    await writer.WriteValueAsync(value, context.CancellationToken);
-                //}
-                //else
-                //{
-                //    await writer.WriteNullAsync(context.CancellationToken);
-                //}
+            //        if (!(ifCheckExp?.Invoke(context) ?? true))
+            //        {
+            //            return;
+            //        }
 
-            });
+            //        writer.WritePropertyName(propertyName);
+
+            //        var value = valueFactory(context);
+
+            //        context.Serializer.Serialize(writer, value);
+            //    }
+            //    catch (Exception e)
+            //    {
+                    
+            //        throw;
+            //    }
+                
+            //    //if (value != null)
+            //    //{
+            //    //    await writer.WriteValueAsync(value, context.CancellationToken);
+            //    //}
+            //    //else
+            //    //{
+            //    //    await writer.WriteNullAsync(context.CancellationToken);
+            //    //}
+
+            //});
 
             JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
 
@@ -173,6 +201,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TElementModel, TChildModel>(
                 propertyName,
+                $"{_displayPropertyName}.{propertyName}",
                 this,
                 valueFactory,
                 childSchemeBuilder,
@@ -192,9 +221,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             if (!string.IsNullOrWhiteSpace(propertyName))
             {
-                _pipe.Add(async (writer, model) =>
+                _pipe.Add((writer, model) =>
                 {
-                    await writer.WritePropertyNameAsync(propertyName, model.CancellationToken);
+                    writer.WritePropertyName(propertyName);
                 });
             }
             else
@@ -204,42 +233,25 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(propertyName,this, valueFactory, s1, Generator, Resolver,ifCheckExp);
+            var s = new ArrayObjectTemplateObjectBuilder<TElementModel, TArrayNewElement>(propertyName, $"{_displayPropertyName}.{propertyName}", this, valueFactory, s1, Generator, Resolver,ifCheckExp);
 
             return s;
         }
 
         public IArrayBuilder<TElementModel> AddArrayValue<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TElementModel>, IEnumerable<TValue>> valueFactory, bool isNull = false,
-            string description = "")
+            string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TValue>>, bool> ifNullRender = null)
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            if (!string.IsNullOrWhiteSpace(propertyName))
+            var propertyInvoke = new ArrayInvoker<TElementModel, TValue>()
             {
-                _pipe.Add(async (writer, context) =>
-                {
-                    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-                    
-                    var data = valueFactory(context);
+                ifNullRender = ifNullRender,
+                ParentDisplayName = _displayPropertyName,
+                PropertyName = propertyName,
+                valueFactory = valueFactory
+            };
 
-                    await writer.WriteStartArrayAsync(context.CancellationToken);
-                    
-                    if (data.HasData())
-                    {
-                        foreach (var value in data)
-                        {
-                            context.Serializer.Serialize(writer,value);
-                            //await writer.WriteValueAsync(e, context.CancellationToken);
-                        }
-                    }
-
-                    await writer.WriteEndArrayAsync(context.CancellationToken);
-                });
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
+            _pipe.Add(propertyInvoke.Invoke);
 
             JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(typeof(TValue));
 
@@ -252,7 +264,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public IArrayBuilder<TElementModel> End()
         {
-            _parent.Add(async (writer, context) =>
+            _parent.Add((writer, context) =>
             {
                 var option =
                     (IOptions<JsonTemplateOption>)context.HttpContext.RequestServices.GetService(
@@ -260,7 +272,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
 
 
-                await writer.WriteStartArrayAsync(context.CancellationToken);
+                writer.WriteStartArray();
 
                 var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.RootModel, context.Model, context.JsonSerializerSettings)
                 {
@@ -283,13 +295,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                             continue;
                         }
 
-                        await writer.WriteStartObjectAsync(context.CancellationToken);
+                        writer.WriteStartObject();
                         
                         foreach (var func in _pipe)
                         {
                             try
                             {
-                                await func(writer, newContext);
+                                func(writer, newContext);
                             }
                             catch (Exception e)
                             {
@@ -299,11 +311,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                             
                         }
 
-                        await writer.WriteEndObjectAsync(context.CancellationToken);
+                        writer.WriteEndObject();
                     }
                 }
                 
-                await writer.WriteEndArrayAsync(context.CancellationToken);
+                writer.WriteEndArray();
             });
 
             return this;
@@ -321,6 +333,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public JsonSchemaGenerator Generator { get;}
 
         public JsonSchemaResolver Resolver { get;  }
+
+        public string DisplayPropertyName => _displayPropertyName;
+
+        public string PropertyName => _propertyName;
 
         public Type ModelType { get; } = typeof(TElementModel);
     }

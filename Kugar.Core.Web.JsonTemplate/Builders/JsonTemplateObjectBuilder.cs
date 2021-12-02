@@ -120,44 +120,56 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            _pipe.Add(async (writer, context) =>
+            var propertyInvoke = new PropertyInvoker<TModel, TValue>()
             {
-                //if (!context.PropertyRenderChecker(context,propertyName))
-                //{
-                //    return;
-                //}
+                ifCheckExp = ifCheckExp,
+                ParentDisplayName = "",
+                PropertyName = propertyName,
+                valueFactory = valueFactory
+            };
+
+            _pipe.Add(propertyInvoke.Invoke);
+
+            //_pipe.Add((writer, context) =>
+            //{
+            //    //if (!context.PropertyRenderChecker(context,propertyName))
+            //    //{
+            //    //    return;
+            //    //}
+
+            //    context.PropertyName = propertyName;
 
 
-                if (!(ifCheckExp?.Invoke(context)??true))
-                {
-                    return;
-                }
+            //    if (!(ifCheckExp?.Invoke(context)??true))
+            //    {
+            //        return;
+            //    }
 
-                try
-                {
-                    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
+            //    try
+            //    {
+            //        writer.WritePropertyName(propertyName);
 
-                    var value = valueFactory(context);
+            //        var value = valueFactory(context);
                     
-                    context.Serializer.Serialize(writer,value);
+            //        context.Serializer.Serialize(writer,value);
 
-                    //if (value != null)
-                    //{
-                    //    //await w context.JsonSerializerSettings.Converters
-                    //    await writer.WriteValueAsync(value, context.CancellationToken);
-                    //}
-                    //else
-                    //{
-                    //    await writer.WriteNullAsync(context.CancellationToken);
-                    //}
-                }
-                catch (Exception e)
-                {
-                    context.Logger?.Log(LogLevel.Error,e,$"输出参数错误:{propertyName}");
-                    throw;
-                }
+            //        //if (value != null)
+            //        //{
+            //        //    //await w context.JsonSerializerSettings.Converters
+            //        //    await writer.WriteValueAsync(value, context.CancellationToken);
+            //        //}
+            //        //else
+            //        //{
+            //        //    await writer.WriteNullAsync(context.CancellationToken);
+            //        //}
+            //    }
+            //    catch (Exception e)
+            //    {
+            //        context.Logger?.Log(LogLevel.Error,e,$"输出参数错误:{propertyName}");
+            //        throw;
+            //    }
                 
-            });
+            //});
 
             JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
 
@@ -214,6 +226,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(
                 propertyName,
+                 propertyName ,
                 this,
                 valueFactory,
                 childSchemeBuilder,
@@ -247,9 +260,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             if (!string.IsNullOrWhiteSpace(propertyName))
             {
-                _pipe.Add(async (writer, model) =>
+                _pipe.Add((writer, model) =>
                 {
-                    await writer.WritePropertyNameAsync(propertyName, model.CancellationToken);
+                    writer.WritePropertyName(propertyName);
                 });
             }
             else
@@ -259,7 +272,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(propertyName, this, valueFactory, s1, Generator, Resolver,ifCheckExp:ifCheckExp);
+            var s = new ArrayObjectTemplateObjectBuilder<TModel, TArrayElement>(propertyName, propertyName, this, valueFactory, s1, Generator, Resolver,ifCheckExp:ifCheckExp);
 
             return s;
         }
@@ -284,28 +297,40 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            _pipe.Add(async (writer, context) =>
+            _pipe.Add((writer, context) =>
             {
-                var data = valueFactory(context);
-                
-                
-                await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-            
-                await writer.WriteStartArrayAsync(context.CancellationToken);
-
-                if (data.HasData())
+                try
                 {
-                    foreach (var value in data)
+                    context.PropertyName = propertyName;
+
+                    var data = valueFactory(context);
+
+
+                    writer.WritePropertyName(propertyName);
+
+                    writer.WriteStartArray();
+
+                    if (data.HasData())
                     {
-                        if (context.CancellationToken.IsCancellationRequested)
-                            break;
+                        foreach (var value in data)
+                        {
+                            if (context.CancellationToken.IsCancellationRequested)
+                                break;
 
-                        context.Serializer.Serialize(writer,value);
-                        //await writer.WriteValueAsync(value,context.CancellationToken);
+                            context.Serializer.Serialize(writer, value);
+                            //await writer.WriteValueAsync(value,context.CancellationToken);
+                        }
                     }
-                } 
 
-                await writer.WriteEndArrayAsync(context.CancellationToken);
+                    writer.WriteEndArray();
+                }
+                catch (Exception e)
+                {
+                    context.Logger?.Log(LogLevel.Error, e, $"输出参数错误:{propertyName}");
+                    throw;
+                }
+
+
                 
             });
 
@@ -317,9 +342,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public virtual IObjectBuilder<TModel> Start()
         {
-            _pipe.Add(async (writer, context) =>
+            _pipe.Add((writer, context) =>
             {
-                await writer.WriteStartObjectAsync(context.CancellationToken);
+                writer.WriteStartObject();
             });
 
             return this;
@@ -327,9 +352,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public virtual void End()
         {
-            _pipe.Add(async (writer, context) =>
+            _pipe.Add((writer, context) =>
             {
-                await writer.WriteEndObjectAsync(context.CancellationToken);
+                writer.WriteEndObject();
             });
             
         }

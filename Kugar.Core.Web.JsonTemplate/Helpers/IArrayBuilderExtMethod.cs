@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Kugar.Core.Web.JsonTemplate.Builders;
+using Newtonsoft.Json.Linq;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers
 {
@@ -42,15 +43,21 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
-            var invoker = objectPropertyExp.Compile();
+            //var invoker = objectPropertyExp.Compile();
 
             if (string.IsNullOrEmpty(description))
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
 
-            return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
+            var tmp = new PropertyExpInvoker<TModel, TValue>(newPropertyName, objectPropertyExp);
+
+            return builder.AddProperty(newPropertyName, tmp.Invoke, description, isNull, example, typeof(TValue),
                 ifCheckExp);
+
+
+            //return builder.AddProperty(newPropertyName, (context) => invoker(context.Model), description, isNull, example, typeof(TValue),
+            //    ifCheckExp);
         }
 
         /// <summary>
@@ -73,25 +80,16 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
-                var invoker = item.Compile();
+                //var invoker = item.Compile();
 
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
 
+                var tmp = new PropertyExpInvoker<TModel, object>(propertyName, item);
 
-                builder.AddProperty(propertyName, (context) =>
-                {
-                    try
-                    {
-                        if (context.Model == null) return null;
+                builder.AddProperty(propertyName, tmp.Invoke, description, newValueType: returnType);
 
-                        return invoker(context.Model);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw;
-                    }
 
-                }, description, newValueType: returnType);
+                //builder.AddProperty(propertyName, (context) => invoker(context.Model), description, newValueType: returnType);
             }
 
             return builder;
@@ -157,6 +155,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         {
             return (IChildObjectBuilder<TNewObject>)new ChildJsonTemplateObjectBuilder<TModel, TNewObject>(
                 "",
+                builder.DisplayPropertyName,
                 builder,
                 objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }

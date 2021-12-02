@@ -125,6 +125,11 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         {
             using (var b = builder.FromPagedList(x => x.Model.Cast(y =>
             {
+                //return new
+                //{
+                //    Item = y.input, AP = y.ap
+                //};
+                //throw new Exception("sdfs");
                 return (Item: y.input,AP: y.ap);
             })))
             {

@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             builder.Pipe.Add((writer, context) =>
             {
                 context.Model = HandleList(context.Model);
-                return Task.CompletedTask;
+                //return Task.CompletedTask;
             });
 
             using (var b=builder.FromObject(GetResultReturn))

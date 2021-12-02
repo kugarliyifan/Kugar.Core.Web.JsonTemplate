@@ -96,7 +96,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 {
                     try
                     {
-                        await pipe(jsonWriter,modelContext );
+                        pipe(jsonWriter,modelContext );
                     }
                     catch (Exception e)
                     {
