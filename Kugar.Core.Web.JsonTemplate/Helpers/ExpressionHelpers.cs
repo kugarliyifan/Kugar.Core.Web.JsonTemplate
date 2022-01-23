@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Xml;
+using Kugar.Core.Exceptions;
 using Kugar.Core.ExtMethod;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers
@@ -19,7 +20,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             readXmlFile(type, _typeXmlDesc);
         }
 
-        public static string GetExporessionPropertyName<T1, T2>(Expression<Func<T1, T2>> expression)
+        public static string GetExpressionPropertyName<T1, T2>(Expression<Func<T1, T2>> expression)
         {
             if (expression.Body.NodeType == ExpressionType.Convert)
             {
@@ -43,6 +44,37 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             throw new ArgumentException();
 
         }
+
+        public static bool IsContainConvert<T1, T2>(Expression<Func<T1, T2>> expression)
+        {
+            return expression.Body.NodeType == ExpressionType.Convert;
+        }
+
+        ///// <summary>
+        ///// 去掉最外层的Convert Object包装,并生成新的表达式
+        ///// </summary>
+        ///// <typeparam name="T1"></typeparam>
+        ///// <typeparam name="TNew"></typeparam>
+        ///// <param name="expression"></param>
+        ///// <returns></returns>
+        //public static Expression<Func<T1, TNew>> UnwrapConvertExpression<T1,TNew>(Expression<Func<T1, object>> expression)
+        //{
+        //    if (!IsContainConvert(expression))
+        //    {
+        //        throw new ArgumentTypeNotMatchException(nameof(expression),"Object");
+        //    }
+
+        //    var p = expression.Body as UnaryExpression;
+
+        //    if (p.Operand is MemberExpression m1)
+        //    {
+        //        return Expression.Call(expression);
+        //    }
+        //    else
+        //    {
+        //        throw new ArgumentOutOfRangeException(nameof(expression), $"表达式{expression.Body.ToString()}无效");
+        //    }
+        //}
 
         public static Type GetExprReturnType<T1, T2>(Expression<Func<T1, T2>> expression)
         {

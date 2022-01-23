@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -40,9 +41,9 @@ namespace Kugar.Core.Web.JsonTemplate
             foreach (var t in types)
             {
                 opt.TypeMappers.Add(new ObjectTypeMapper(t, (gen, resolver) =>
-                {
+                { 
                     var builder = GlobalJsonTemplateCache.GetTemplateInfo(t);
-
+                    
                     return builder.SchemaBuilder.Schema;
 
                 }));
@@ -59,6 +60,7 @@ namespace Kugar.Core.Web.JsonTemplate
             GlobalJsonTemplateCache.Provider = app.ApplicationServices;
         }
 
+        [Obsolete]
         public static IServiceCollection AddJsonTemplateOptions(this IServiceCollection services,JsonTemplateOption options)
         {
             services.AddOptions<JsonTemplateOption>().Configure((s) =>

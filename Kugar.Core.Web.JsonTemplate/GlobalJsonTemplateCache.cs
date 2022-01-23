@@ -47,7 +47,7 @@ namespace Kugar.Core.Web.JsonTemplate
         }
 
         public static IObjectBuilderInfo GetTemplateInfo(Type builderType)
-        {
+        { 
             //此处代码用于防止传入的modelType无法构建Build的TModel泛型,比如定义的是 IEnumerable,但传入的modelType是Array的情况
             var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>));
 
@@ -147,7 +147,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
             var scheme = new JsonSchema();
 
-#if NETCOREAPP3_0 || NETCOREAPP3_1
+#if NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0 || NET6_0
             var jsonOpt = (IOptionsSnapshot<MvcNewtonsoftJsonOptions>)Provider.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
 
             if (jsonOpt?.Value != null)

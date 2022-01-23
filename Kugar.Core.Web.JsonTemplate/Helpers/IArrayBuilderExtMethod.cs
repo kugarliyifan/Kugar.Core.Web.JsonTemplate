@@ -38,7 +38,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             if (string.IsNullOrEmpty(newPropertyName))
             {
-                newPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+                newPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
             }
 
             //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
@@ -76,7 +76,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             {
                 var returnType = ExpressionHelpers.GetExprReturnType(item);
 
-                var propertyName = ExpressionHelpers.GetExporessionPropertyName(item);
+                var propertyName = ExpressionHelpers.GetExpressionPropertyName(item);
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
 
@@ -123,7 +123,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             if (string.IsNullOrEmpty(newPropertyName))
             {
-                newPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+                newPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
             }
 
             //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);

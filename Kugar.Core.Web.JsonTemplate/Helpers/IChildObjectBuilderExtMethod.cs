@@ -39,7 +39,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             if (string.IsNullOrEmpty(newPropertyName))
             {
-                newPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+                newPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
             }
 
             if (string.IsNullOrEmpty(description))
@@ -88,7 +88,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             {
                 var returnType = ExpressionHelpers.GetExprReturnType(item);
 
-                var propertyName = ExpressionHelpers.GetExporessionPropertyName(item);
+                var propertyName = ExpressionHelpers.GetExpressionPropertyName(item);
 
 
                 //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
@@ -175,10 +175,15 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         {
             if (string.IsNullOrEmpty(newPropertyName))
             {
-                NewPropertyName = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+                NewPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
             }
 
-            _invoke = objectPropertyExp.Compile();
+            if (prop==null)
+            {
+                throw new ArgumentNullException(nameof(prop));
+            }
+
+            _invoke = prop.Compile();
 
             
         }
@@ -197,7 +202,18 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 };
             }
 
-            return _invoke(context.Model);
+            try
+            {
+                return _invoke(context.Model);
+            }
+            catch (Exception e)
+            {
+                throw new OutputRenderException(context, $"输出{displayName}出现错误", e)
+                {
+                    DisplayPropertyPath = displayName
+                };
+            }
+            
         }
     }
 }

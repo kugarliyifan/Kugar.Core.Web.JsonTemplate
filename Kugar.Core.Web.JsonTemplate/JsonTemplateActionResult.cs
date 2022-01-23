@@ -36,6 +36,8 @@ namespace Kugar.Core.Web.JsonTemplate
         
         public async Task ExecuteResultAsync(ActionContext context)
         {
+            //Debugger.Break();
+
             context.HttpContext.Response.ContentType = "application/json";
 
             JsonSerializerSettings jsonSettings = null;

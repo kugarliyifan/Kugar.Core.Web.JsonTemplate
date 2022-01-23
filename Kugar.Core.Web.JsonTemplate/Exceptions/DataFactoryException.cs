@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -18,6 +19,7 @@ namespace Kugar.Core.Web.JsonTemplate.Exceptions
         public DataFactoryException(string? message, Exception? innerException, IJsonTemplateBuilderContext context) :
             base(message, innerException)
         {
+            Trace.WriteLine(message);
             this.Context = context;
         }
 
@@ -36,6 +38,7 @@ namespace Kugar.Core.Web.JsonTemplate.Exceptions
         public OutputRenderException(IJsonTemplateBuilderContext context,string message="", Exception? innerException=null) :
             base(message, innerException)
         {
+            Trace.WriteLine(message);
             this.Context = context;
         }
 

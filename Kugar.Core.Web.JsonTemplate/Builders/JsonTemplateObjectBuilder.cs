@@ -61,7 +61,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Expression<Func<TModel, TValue>> objectPropertyExp)
         {
             var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+            var name = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
 
             return (name, desc);
         }
@@ -70,7 +70,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Expression<Func<IJsonTemplateBuilderContext<TModel>, TValue>> objectPropertyExp)
         {
             var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+            var name = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
 
             return (name, desc);
         }

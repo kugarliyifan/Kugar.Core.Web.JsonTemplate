@@ -63,7 +63,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Expression<Func<TElement, TValue>> objectPropertyExp)
         {
             var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+            var name = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
 
             return (name, desc);
         }
@@ -243,7 +243,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            var propertyInvoke = new ArrayInvoker<TElementModel, TValue>()
+            var propertyInvoke = new ArrayValueInvoker<TElementModel, TValue>()
             {
                 ifNullRender = ifNullRender,
                 ParentDisplayName = _displayPropertyName,

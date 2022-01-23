@@ -60,7 +60,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Expression<Func<TCurrentModel, TValue>> objectPropertyExp)
         {
             var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExporessionPropertyName(objectPropertyExp);
+            var name = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
 
             return (name, desc);
         }
@@ -205,7 +205,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            var propertyInvoke = new ArrayInvoker<TCurrentModel, TArrayElement>()
+            var propertyInvoke = new ArrayValueInvoker<TCurrentModel, TArrayElement>()
             {
                 ifNullRender = ifNullRender,
                 ParentDisplayName =_displayPropertyName ,
@@ -354,6 +354,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
 
+            if (context.Model==null)
+            {
+                Debugger.Break();
+                Trace.WriteLine($"正在输出:{context.PropertyName}");
+                return;
+            }
+
             if (!(ifCheckExp?.Invoke(context) ?? true))
             {
                 return;
@@ -390,7 +397,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
     }
 
-    internal struct ArrayInvoker<TCurrentModel, TArrayElement>
+    internal struct ArrayValueInvoker<TCurrentModel, TArrayElement>
     {
         public string PropertyName { set; get; }
 
@@ -412,6 +419,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             }
             catch (Exception e)
             {
+
                 throw new DataFactoryException($"数据生成错误:{ParentDisplayName}", e, context);
             }
 
@@ -446,7 +454,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             }
             catch (Exception e)
             {
-                throw new OutputRenderException(context, $"数据输出错误:{ParentDisplayName}", e);
+                throw new OutputRenderException(context, $"数据输出错误:{context.PropertyName}", e);
             }
         }
     }
