@@ -12,7 +12,7 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IArrayBuilder<TElement> : IObjectBuilderInfo,IObjectBuilderPipe<TElement>,IDisposable
+    public interface IArrayBuilder<TElement> : ITemplateBuilder<TElement>,IDisposable
     {
         IArrayBuilder<TElement> AddProperty<TValue>(
             [Required]string propertyName,
@@ -72,10 +72,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public string DisplayPropertyName { get; }
 
+
         public string PropertyName { get; }
     }
 
-    internal class ArrayObjectTemplateObjectBuilder<TParentModel, TElementModel> : IArrayBuilder<TElementModel>,IObjectBuilderPipe<TElementModel>
+    public class ArrayObjectTemplateObjectBuilder<TParentModel, TElementModel> : IArrayBuilder<TElementModel> 
     {
         private List<PipeActionBuilder<TElementModel>> _pipe = new List<PipeActionBuilder<TElementModel>>();
         private Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;

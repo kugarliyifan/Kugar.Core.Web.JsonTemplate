@@ -17,7 +17,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
     //    IObjectBuilder<TModel> End();
     //}
 
-    public interface IObjectBuilder<TModel> : /*IDisposable,*/ IObjectBuilderInfo,IObjectBuilderPipe<TModel>
+    public interface IObjectBuilder<TModel> : /*IDisposable,*/ ITemplateBuilder<TModel>
     {
         IObjectBuilder<TModel> AddProperty<TValue>(
             string propertyName,
@@ -78,7 +78,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
     public delegate bool IfCheckCallback<TModel>(IJsonTemplateBuilderContext<TModel> context, string propertyName);
 
-    internal class JsonTemplateObjectBuilder<TModel> : IObjectBuilder<TModel>,IObjectBuilderPipe<TModel>
+    internal class JsonTemplateObjectBuilder<TModel> : IObjectBuilder<TModel> 
     {
         private List<PipeActionBuilder<TModel>> _pipe = new List<PipeActionBuilder<TModel>>();
 

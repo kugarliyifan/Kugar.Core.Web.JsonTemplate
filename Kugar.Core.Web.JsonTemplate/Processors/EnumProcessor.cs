@@ -74,7 +74,8 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
              List<KeyValuePair<string, int>> list = new List<KeyValuePair<string, int>>();
              foreach (var field in fields)
              {
-                 //if (field.FieldType.IsEnum)
+                 
+                 if (field.FieldType == enumType)
                  {
                      var key = "";
 
@@ -83,8 +84,8 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
                      var attribute = field.GetCustomAttribute<DescriptionAttribute>();
                      if (attribute == null)
                      {
-                         var node = ExpressionHelpers.XmlDoc.GetElementsByTagName("member").AsEnumerable<XmlElement>()
-                             .Where(x => x.GetAttribute("name") == $"F:{field.DeclaringType.FullName}.{Enum.GetName(enumType,v)}")
+                         var node = ExpressionHelpers.XmlDoc.GetElementsByTagName("member").AsEnumerable<XmlElement>()?
+                             .Where(x => x.GetAttribute("name") == $"F:{field.DeclaringType?.FullName}.{Enum.GetName(enumType,v)}")
                              .FirstOrDefault();
 
                          key = node?.GetFirstElementsByTagName("summary")?.InnerText?.Trim()??"";

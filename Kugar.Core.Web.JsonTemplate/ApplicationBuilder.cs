@@ -53,6 +53,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
             opt.OperationProcessors.Add(new ValueTupleOperationProcessor());
             opt.OperationProcessors.Add(new ActionParamtersToJsonBodyProcessor());
+            
         }
 
         public static void UseJsonTemplate(this IApplicationBuilder app)

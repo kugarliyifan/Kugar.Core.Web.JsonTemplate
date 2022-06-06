@@ -11,7 +11,7 @@ using Kugar.Core.ExtMethod;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers
 {
-    internal static class ExpressionHelpers
+    public static class ExpressionHelpers
     {
         private static Dictionary<string,string> _typeXmlDesc=new Dictionary<string, string>();
 

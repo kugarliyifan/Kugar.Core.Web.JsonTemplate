@@ -14,7 +14,7 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IChildObjectBuilder<TCurrentModel> : IObjectBuilderInfo,IObjectBuilderPipe<TCurrentModel>,IDisposable
+    public interface IChildObjectBuilder<TCurrentModel> : ITemplateBuilder<TCurrentModel>,IDisposable
     {
         IChildObjectBuilder<TCurrentModel> AddProperty<TValue>(
             string propertyName,
@@ -67,9 +67,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         
     }
     
-    
-
-    internal class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : IChildObjectBuilder<TCurrentModel>
+    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : IChildObjectBuilder<TCurrentModel>
     {
         private List<PipeActionBuilder<TCurrentModel>> _pipe = new List<PipeActionBuilder<TCurrentModel>>();
         private bool _isNewObject = false;
@@ -340,7 +338,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
     }
 
-    internal struct PropertyInvoker<TCurrentModel, TNewChildModel>
+    public struct PropertyInvoker<TCurrentModel, TNewChildModel>
     {
         public string PropertyName { set; get; }
 
@@ -397,7 +395,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
     }
 
-    internal struct ArrayValueInvoker<TCurrentModel, TArrayElement>
+    public struct ArrayValueInvoker<TCurrentModel, TArrayElement>
     {
         public string PropertyName { set; get; }
 

@@ -186,6 +186,11 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
                 b.AddProperties(x => x.OO, x => x.SSS);
             }
         }
+
+        public override void BuildScheme(IObjectBuilder<IEnumerable<AP>> builder)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static class Ext

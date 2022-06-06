@@ -73,6 +73,24 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model,description:"输出的实际结果");
         }
 
+
+        public static IArrayBuilder<TNewElement> FromReturnArrayResult<TElement,TNewElement>(this IObjectBuilder<IEnumerable<TElement>> source,
+            Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, ResultReturn> resultFactory,
+            Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, IEnumerable<TNewElement>> whereFunc ) 
+        {
+            using (var f = source.FromObject(resultFactory))
+            {
+                f.AddProperty("isSuccess", x => x.Model.IsSuccess, description: "本次操作是否成功")
+                    .AddProperty("message", x => x.Model.Message.IfEmptyOrWhileSpace(x.Model.Error?.Message ?? ""), description: "本次操作的操作结果文本")
+                    .AddProperty("returnCode", x => x.Model.ReturnCode, description: "操作结果代码");
+
+                //f.AddProperties(x => x.IsSuccess, x => x.ReturnCode)
+                //    .AddProperty("message", x => x.Model.Message.IfEmptyOrWhileSpace(x.Model.Error?.Message ?? ""), description: "结果文本消息");
+            }
+
+            return source.AddArrayObject<TNewElement>("returnData", x => whereFunc?.Invoke(x)??null, description: "输出的实际结果");
+        }
+
         public static IArrayBuilder<TElement> FromPagedList<TModel, TElement>(this IObjectBuilder<TModel> builder,
             [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
             )

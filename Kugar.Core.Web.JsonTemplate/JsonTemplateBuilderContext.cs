@@ -58,9 +58,14 @@ namespace Kugar.Core.Web.JsonTemplate
         /// 在ArrayObject单次循环中的临时数据
         /// </summary>
         Dictionary<string,object> LoopItemTemporaryData { get; }
+
+        /// <summary>
+        /// 当前builder的数组
+        /// </summary>
+        IEnumerable<TModel> CurrentArray { set; get; }
     }
 
-    internal class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
+    public class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
     {
         private Lazy<TemplateData> _temporaryData = new Lazy<TemplateData>();
         internal Lazy<TemplateData> _globalTemporaryData = null;

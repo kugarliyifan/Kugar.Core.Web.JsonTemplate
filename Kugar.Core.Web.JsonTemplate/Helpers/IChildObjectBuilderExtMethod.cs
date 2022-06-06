@@ -163,7 +163,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         }
     }
 
-    internal class PropertyExpInvoker<TModel, TValue>
+    public class PropertyExpInvoker<TModel, TValue>
     {
         private Func<TModel, TValue> _invoke = null;
 
@@ -173,15 +173,18 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
         public PropertyExpInvoker(string newPropertyName, Expression<Func<TModel, TValue>> prop)
         {
-            if (string.IsNullOrEmpty(newPropertyName))
-            {
-                NewPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
-            }
-
-            if (prop==null)
+            if (prop == null)
             {
                 throw new ArgumentNullException(nameof(prop));
             }
+
+            if (string.IsNullOrEmpty(newPropertyName))
+            {
+                NewPropertyName = ExpressionHelpers.GetExpressionPropertyName(prop);
+            }
+
+            objectPropertyExp = prop;
+            
 
             _invoke = prop.Compile();
 

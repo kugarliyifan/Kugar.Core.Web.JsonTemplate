@@ -9,22 +9,33 @@ namespace Kugar.Core.Web.JsonTemplate
         
     }
 
-    /// <summary>
-    /// 用于构建输出模板的基类
-    /// </summary>
-    /// <typeparam name="TModel"></typeparam>
-    public abstract class JsonTemplateBase<TModel> :IJsonTemplateObject
+    public abstract class JsonEmptyTemplateBase<TModel> : IJsonTemplateObject
     {
+        public virtual Type ModelType { get; }
+
         /// <summary>
         /// 构建属性的输出,builder一定不要使用using
         /// </summary>
         /// <param name="builder">属性构建器,,一定不要对builder使用using</param>
         public abstract void BuildScheme(IObjectBuilder<TModel> builder);
+    }
+
+    /// <summary>
+    /// 用于构建输出模板的基类
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    public abstract class JsonTemplateBase<TModel> : JsonEmptyTemplateBase<TModel>
+    {
+        /// <summary>
+        /// 构建属性的输出,builder一定不要使用using
+        /// </summary>
+        /// <param name="builder">属性构建器,,一定不要对builder使用using</param>
+        public abstract override void BuildScheme(IObjectBuilder<TModel> builder);
 
         /// <summary>
         /// 当前的模型类型
         /// </summary>
-        public Type ModelType => typeof(TModel);
+        public override Type ModelType => typeof(TModel);
 
         /// <summary>
         /// 检查是否添加该属性,,返回true,输出该属性,,false为不输出该属性
@@ -37,4 +48,5 @@ namespace Kugar.Core.Web.JsonTemplate
             return true;
         }
     }
+     
 }
