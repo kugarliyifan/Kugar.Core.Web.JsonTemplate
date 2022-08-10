@@ -17,7 +17,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
     //    IObjectBuilder<TModel> End();
     //}
 
-    public interface IObjectBuilder<TModel> : /*IDisposable,*/ ITemplateBuilder<TModel>
+    public interface IObjectBuilder<TModel> : IDisposable, ITemplateBuilder<TModel>
     {
         IObjectBuilder<TModel> AddProperty<TValue>(
             string propertyName,
@@ -29,7 +29,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
         );
 
-        IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
+        IObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
@@ -178,8 +178,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             return this;
         }
+         
 
- 
+        ITemplateBuilder<TModel> ITemplateBuilder<TModel>.AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel>, TValue> valueFactory, string description,
+            bool isNull, object example, Type newValueType, Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp)
+        {
+            return AddProperty(propertyName, valueFactory, description, isNull, example, newValueType, ifCheckExp);
+        }
 
         /// <summary>
         /// 添加一个object属性
@@ -190,7 +195,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         /// <param name="isNull">是否允许为null</param>
         /// <param name="description">备注</param>
         /// <returns></returns>
-        public IChildObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
+        public IObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
@@ -198,33 +203,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             //Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
             )
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
-            Debug.Assert(valueFactory != null);
-
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
-
-            //SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
-
-            //_pipe.Add(async (writer, context) =>
-            //{
-            //    //if (!context.PropertyRenderChecker(context,propertyName))
-            //    //{
-            //    //    return;
-            //    //}
-
-
-            //    //if (!(ifCheckExp?.Invoke(context) ?? true))
-            //    //{ 
-            //    //    return;
-            //    //}
-
-            //    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-                
-            //});
+            
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return (IChildObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(
+            return (IObjectBuilder<TChildModel>)new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(
                 propertyName,
                  propertyName ,
                 this,
@@ -368,5 +352,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public JsonSchemaResolver Resolver { get; set; }
         public Type ModelType => typeof(TModel);
 
+        public void Dispose()
+        {
+            End();
+        }
     }
 }

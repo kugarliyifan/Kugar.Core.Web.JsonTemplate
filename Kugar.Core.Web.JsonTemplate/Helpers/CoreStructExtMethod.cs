@@ -13,7 +13,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
     /// </summary>
     public static class CoreStructExtMethod
     {
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
+        public static IObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
         {
             source.AddProperty("isSuccess", resultFactory,"本次操作是否成功")
                 .AddProperty("message", x => string.Empty,"操作结果文本")
@@ -23,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder< TModel> source,
+        public static IObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder< TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
@@ -40,7 +40,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
+        public static IObjectBuilder<TModel> FromReturnResult<TModel>(
             this IObjectBuilder<TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
         {

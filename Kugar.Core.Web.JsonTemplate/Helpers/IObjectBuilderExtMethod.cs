@@ -97,7 +97,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TNewObject> FromObject<TModel, TNewObject>(this IObjectBuilder<TModel> builder,
+        public static IObjectBuilder<TNewObject> FromObject<TModel, TNewObject>(this IObjectBuilder<TModel> builder,
             Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
         )
         {

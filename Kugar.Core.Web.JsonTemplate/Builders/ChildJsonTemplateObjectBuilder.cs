@@ -16,24 +16,6 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 {
     public interface IChildObjectBuilder<TCurrentModel> : ITemplateBuilder<TCurrentModel>,IDisposable
     {
-        IChildObjectBuilder<TCurrentModel> AddProperty<TValue>(
-            string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TValue> valueFactory,
-            string description = "",
-            bool isNull = false,
-            object example = null,
-            Type? newValueType = null,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp = null
-        );
-
-        IChildObjectBuilder<TNewChildModel> AddObject<TNewChildModel>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory,
-            bool isNull = false,
-            string description = "",
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null
-        );
-
         IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
             Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
             bool isNull = false,
@@ -47,7 +29,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             bool isNull = false,
             string description = "",
             //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
+            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifCheckExp = null
         );
 
         IChildObjectBuilder<TCurrentModel> Start();
@@ -67,19 +49,12 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         
     }
     
-    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : IChildObjectBuilder<TCurrentModel>
+    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : TemplateBuilderBase<TParentModel,TCurrentModel>,IDisposable
     {
-        private List<PipeActionBuilder<TCurrentModel>> _pipe = new List<PipeActionBuilder<TCurrentModel>>();
         private bool _isNewObject = false;
-
-        private IObjectBuilderPipe<TParentModel> _parent;
-
-        //private IList<PipeActionBuilder<TChildModel>> _changeTypeParent = null;
+        
         private Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> _childObjFactory;
-        //private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifNullRender = null;
-        private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifCheckExp = null;
         private string _propertyName = "";
-        private string _displayPropertyName = "";
 
         public ChildJsonTemplateObjectBuilder(
             string propertyName,
@@ -92,181 +67,25 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             bool isNewObject,
             Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp=null //,
             //Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifNullRender = null
-            ) //: base(schemeBuilder, generator, resolver)
+            ) : base(displayPropertyName,parent,schemeBuilder, generator, resolver, ifCheckExp)
         {
-            _parent = parent;
             _childObjFactory = childObjFactory;
-            //_ifNullRender = ifNullRender;
             _isNewObject = isNewObject;
-            _ifCheckExp = ifCheckExp;
-            this.SchemaBuilder = schemeBuilder;
-            this.Generator = generator;
-            this.Resolver = resolver;
             _propertyName = propertyName;
-            _displayPropertyName = displayPropertyName;
         }
-
-        public IChildObjectBuilder<TCurrentModel> AddProperty<TValue>(string propertyName, 
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TValue> valueFactory, 
-            string description = "",
-            bool isNull = false, 
-            object example = null, 
-            Type? newValueType = null, 
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp = null)
+        
+        public ITemplateBuilder<TCurrentModel> Start()
         {
-            Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
-            Debug.Assert(valueFactory != null);
-
-            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
-
-            var propertyInvoke = new PropertyInvoker<TCurrentModel, TValue>()
-            {
-                ifCheckExp = ifCheckExp,
-                ParentDisplayName = $"{_displayPropertyName}.{propertyName}",
-                PropertyName = propertyName,
-                valueFactory = valueFactory
-            };
-
-            _pipe.Add(propertyInvoke.Invoke);
-
-            JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
-
-            SchemaBuilder.AddSingleProperty(propertyName, jsonType,
-                description, example, isNull);
-
             return this;
         }
-
-        public IChildObjectBuilder<TNewChildModel> AddObject<TNewChildModel>(string propertyName, 
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory, 
-            bool isNull = false,
-            string description = "", 
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<TNewChildModel>, bool> ifNullRender = null)
-        {
-            Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
-            Debug.Assert(valueFactory != null);
-
-            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
-
-            //SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
-
-            //_pipe.Add(async (writer, context) =>
-            //{
-            //    await writer.WritePropertyNameAsync(propertyName, context.CancellationToken);
-            //});
-    
-            var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
-
-            return new ChildJsonTemplateObjectBuilder<TCurrentModel, TNewChildModel>(
-                propertyName,
-                $"{_displayPropertyName}.{propertyName}",
-                this,
-                valueFactory,
-                childSchemeBuilder,
-                Generator,
-                Resolver,
-                isNewObject:true,
-                ifCheckExp:ifCheckExp
-                
-                /*, ifNullRender: ifNullRender*/).Start();
-        }
-
-        public IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
-            string description = "", 
-            Func<IJsonTemplateBuilderContext<TArrayElement>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null)
-        {
-            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
-
-            if (!string.IsNullOrWhiteSpace(propertyName))
-            {
-                _pipe.Add((writer, model) =>
-                {
-                    writer.WritePropertyName(propertyName);
-                });
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
-
-            var s = new ArrayObjectTemplateObjectBuilder<TCurrentModel, TArrayElement>(propertyName, $"{_displayPropertyName}.{propertyName}", this, valueFactory, s1, Generator, Resolver,ifCheckExp);
-
-            return s;
-        }
-
-        public IChildObjectBuilder<TCurrentModel> AddArrayValue<TArrayElement>(string propertyName, Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory, bool isNull = false,
-            string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null)
-        {
-            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
-
-            var propertyInvoke = new ArrayValueInvoker<TCurrentModel, TArrayElement>()
-            {
-                ifNullRender = ifNullRender,
-                ParentDisplayName =_displayPropertyName ,
-                PropertyName = propertyName,
-                valueFactory = valueFactory
-            };
-
-            _pipe.Add(propertyInvoke.Invoke);
-              
-            SchemaBuilder.AddValueArray(propertyName,NSwagSchemeBuilder.NetTypeToJsonObjectType(typeof(TArrayElement)), description, isNull);
-
-            return this;
-        }
-
-        public IChildObjectBuilder<TCurrentModel> Start()
-        {
-            //if (_isNewObject)
-            //{
-            //    _pipe.Add((async (writer, context) =>
-            //    {
-            //        await writer.WriteStartObjectAsync();
-            //    }));
-            //}
-
-            //if (_isNewObject)
-            //{
-            //    _pipe.Add(async (writer, context) =>
-            //    {
-            //        if (!(_ifCheckExp?.Invoke(context)??true))
-            //        {
-            //            return;
-            //        }
-            //        await writer.WritePropertyNameAsync(_propertyName, context.CancellationToken);
-            //    });
-            //}
-            
-
-            return this;
-        }
-
-        public string DisplayPropertyName => _displayPropertyName;
+        
         public string PropertyName => _propertyName;
-
-
+        
         public void End()
         {
-            //if (_isNewObject)
-            //{
-            //    _pipe.Add((async (writer, context) =>
-            //    {
-            //        await writer.WriteEndObjectAsync(context.CancellationToken);
-            //    }));
-            //}
-            
-            _parent.Pipe.Add(invoke);
-            
+            Parent.Pipe.Add(invoke);
         }
-
-        public NSwagSchemeBuilder SchemaBuilder { get; }
-        public JsonSchemaGenerator Generator { get; }
-        public JsonSchemaResolver Resolver { get; }
-        public Type ModelType => typeof(TCurrentModel);
-        public IList<PipeActionBuilder<TCurrentModel>> Pipe => _pipe;
+        
         public void Dispose()
         {
             End();
@@ -291,10 +110,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, context.RootModel, value, context.JsonSerializerSettings, c._globalTemporaryData)
             {
                 //PropertyRenderChecker = context.PropertyRenderChecker
-                PropertyName = _displayPropertyName
+                PropertyName = DisplayPropertyName
             };
 
-            if (!(_ifCheckExp?.Invoke(newContext) ?? true))
+            if (!(IfCheckExp?.Invoke(newContext) ?? true))
             {
                 return;
             }
@@ -303,9 +122,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 writer.WritePropertyName(_propertyName);
             }
-
-
-
+            
             if (value != null)
             {
                 if (_isNewObject)
@@ -313,19 +130,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                     writer.WriteStartObject();
                 }
 
-                foreach (var builder in _pipe)
-                {
-                    try
-                    {
-                        builder(writer, newContext);
-                    }
-                    catch (Exception e)
-                    {
-                        Debugger.Break();
-                        throw;
-                    }
-                }
-
+                base.InvokePipe(writer,newContext);
+                
                 if (_isNewObject)
                 {
                     writer.WriteEndObject();

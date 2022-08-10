@@ -22,8 +22,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="newPropertyName">新属性名,如果需要修改objectPropertyExp输出的属性,则传入该参数</param>
         /// <param name="ifCheckExp">传入一个回调,用于判断在运行时是否添加该属性</param>
         /// <returns></returns>
-        public static IChildObjectBuilder<TModel> AddProperty<TModel, TValue>(
-            this IChildObjectBuilder<TModel> builder,
+        public static IObjectBuilder<TModel> AddProperty<TModel, TValue>(
+            this IObjectBuilder<TModel> builder,
             Expression<Func<TModel, TValue>> objectPropertyExp,
             string description = "",
             bool isNull = false,
