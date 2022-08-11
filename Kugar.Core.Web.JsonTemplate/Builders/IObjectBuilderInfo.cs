@@ -8,13 +8,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
     public interface IObjectBuilderInfo
     {
 
-        public NSwagSchemeBuilder SchemaBuilder { get; }
+        NSwagSchemeBuilder SchemaBuilder { get; }
 
-        public JsonSchemaGenerator Generator { get; }
+        JsonSchemaGenerator Generator { get; }
 
-        public JsonSchemaResolver Resolver { get; }
+        JsonSchemaResolver Resolver { get; }
 
-        public Type ModelType { get; }
+        Type ModelType { get; }
 
         
     }
