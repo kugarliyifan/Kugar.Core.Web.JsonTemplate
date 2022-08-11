@@ -3,8 +3,13 @@ using System.Diagnostics;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Newtonsoft.Json;
 
-namespace Kugar.Core.Web.JsonTemplate.Builders
+namespace Kugar.Core.Web.JsonTemplate.Invokers
 {
+    /// <summary>
+    /// 属性执行器
+    /// </summary>
+    /// <typeparam name="TCurrentModel"></typeparam>
+    /// <typeparam name="TNewChildModel"></typeparam>
     public struct PropertyInvoker<TCurrentModel, TNewChildModel>
     {
         public string PropertyName { set; get; }

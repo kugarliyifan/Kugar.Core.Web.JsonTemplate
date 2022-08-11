@@ -23,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder< TModel> source,
+        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder<TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))

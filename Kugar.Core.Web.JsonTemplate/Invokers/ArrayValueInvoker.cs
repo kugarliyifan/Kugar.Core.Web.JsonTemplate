@@ -4,8 +4,13 @@ using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Newtonsoft.Json;
 
-namespace Kugar.Core.Web.JsonTemplate.Builders
+namespace Kugar.Core.Web.JsonTemplate.Invokers
 {
+    /// <summary>
+    /// 值类型数组执行器
+    /// </summary>
+    /// <typeparam name="TCurrentModel"></typeparam>
+    /// <typeparam name="TArrayElement"></typeparam>
     public struct ArrayValueInvoker<TCurrentModel, TArrayElement>
     {
         public string PropertyName { set; get; }

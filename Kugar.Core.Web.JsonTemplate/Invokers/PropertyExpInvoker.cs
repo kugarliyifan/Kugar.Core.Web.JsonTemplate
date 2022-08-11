@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
+using Kugar.Core.Web.JsonTemplate.Helpers;
 
-namespace Kugar.Core.Web.JsonTemplate.Helpers
+namespace Kugar.Core.Web.JsonTemplate.Invokers
 {
+    /// <summary>
+    /// 对象属性表达式执行器
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TValue"></typeparam>
     public class PropertyExpInvoker<TModel, TValue>
     {
         private Func<TModel, TValue> _invoke = null;

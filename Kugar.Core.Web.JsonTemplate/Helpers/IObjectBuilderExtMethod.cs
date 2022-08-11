@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Builders;
+using Kugar.Core.Web.JsonTemplate.Invokers;
 using Newtonsoft.Json.Linq;
 
 namespace Kugar.Core.Web.JsonTemplate.Helpers

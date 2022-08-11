@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
+using Kugar.Core.Web.JsonTemplate.Helpers;
+using Kugar.Core.Web.JsonTemplate.Invokers;
 using NJsonSchema;
 using NJsonSchema.Generation;
 
