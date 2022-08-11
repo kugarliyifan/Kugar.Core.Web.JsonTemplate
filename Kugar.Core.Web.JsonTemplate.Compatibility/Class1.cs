@@ -5,7 +5,7 @@ namespace Kugar.Core.Web.JsonTemplate.Compatibility
 {
     public abstract class StaticJsonBuilder<TModel>:JsonTemplateBase<TModel>
     {
-        public override void BuildScheme(IObjectBuilder<TModel> builder)
+        public override void BuildScheme(ITemplateBuilder<TModel> builder)
         {
             throw new NotImplementedException();
         }

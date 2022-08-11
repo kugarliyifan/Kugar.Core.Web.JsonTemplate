@@ -21,7 +21,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             this.ResultFactory = _defaultResultFactory;
         }
 
-        public override void BuildScheme(IObjectBuilder<TModel> builder)
+        public override void BuildScheme(ITemplateBuilder<TModel> builder)
         {
             using (var b = BuildWrap(builder))
             {
@@ -33,14 +33,14 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         /// 构建内层ReturnData属性内部的参数,对builder参数不要使用using
         /// </summary>
         /// <param name="builder"></param>
-        protected abstract void BuildReturnDataScheme(IChildObjectBuilder<TModel> builder);
+        protected abstract void BuildReturnDataScheme(ITemplateBuilder<TModel> builder);
 
         /// <summary>
         /// 用于控制输出的外层ResultReturn的属性
         /// </summary>
         protected virtual ResultReturnFactory<TModel> ResultFactory{get;}
 
-        protected virtual IChildObjectBuilder<TModel> BuildWrap(IObjectBuilder<TModel> builder)
+        protected virtual ITemplateBuilder<TModel> BuildWrap(ITemplateBuilder<TModel> builder)
         {
             return builder.FromReturnResult(GetResultReturn);
         }

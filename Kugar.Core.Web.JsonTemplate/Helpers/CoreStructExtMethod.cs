@@ -13,7 +13,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
     /// </summary>
     public static class CoreStructExtMethod
     {
-        public static IObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
+        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
         {
             source.AddProperty("isSuccess", resultFactory,"本次操作是否成功")
                 .AddProperty("message", x => string.Empty,"操作结果文本")
@@ -23,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IObjectBuilder<TModel> FromReturnResult<TModel>(this IObjectBuilder< TModel> source,
+        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder< TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
@@ -40,8 +40,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IObjectBuilder<TModel> FromReturnResult<TModel>(
-            this IObjectBuilder<TModel> source,
+        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(
+            this ITemplateBuilder<TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
@@ -56,8 +56,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static IChildObjectBuilder<TModel> FromReturnResult<TModel>(
-            this IObjectBuilder<TModel> source,
+        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(
+            this ITemplateBuilder<TModel> source,
             Func<IJsonTemplateBuilderContext<TModel>, ResultReturn> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
@@ -74,7 +74,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         }
 
 
-        public static IArrayBuilder<TNewElement> FromReturnArrayResult<TElement,TNewElement>(this IObjectBuilder<IEnumerable<TElement>> source,
+        public static ITemplateBuilder<TNewElement> FromReturnArrayResult<TElement,TNewElement>(
+            this ITemplateBuilder<IEnumerable<TElement>> source,
             Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, ResultReturn> resultFactory,
             Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, IEnumerable<TNewElement>> whereFunc ) 
         {
@@ -91,7 +92,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddArrayObject<TNewElement>("returnData", x => whereFunc?.Invoke(x)??null, description: "输出的实际结果");
         }
 
-        public static IArrayBuilder<TElement> FromPagedList<TModel, TElement>(this IObjectBuilder<TModel> builder,
+        public static IArrayBuilder<TModel, TElement> FromPagedList<TModel, TElement>(this ITemplateBuilder<TModel> builder,
             [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
             )
         {
@@ -107,36 +108,6 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             
                 
             return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TElement>(
-            this IObjectBuilder<IPagedList<TElement>> builder)
-        {
-            return FromPagedList(builder, x => x.Model);
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TModel, TElement>(this IChildObjectBuilder<TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
-        )
-        {
-            if (valueFactory == null)
-            {
-                throw new ArgumentNullException(nameof(valueFactory));
-            }
-
-            using (var b=builder.FromObject(x=>valueFactory(x)))
-            {
-                b.AddProperties(x => x.PageCount, x => x.PageSize, x => x.PageIndex, x => x.TotalCount);
-            }
-            
-                
-            return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
-        }
-
-        public static IArrayBuilder<TElement> FromPagedList<TElement>(
-            this IChildObjectBuilder<IPagedList<TElement>> builder)
-        {
-            return FromPagedList(builder, x => x.Model);
-        }
+        } 
     }
 }

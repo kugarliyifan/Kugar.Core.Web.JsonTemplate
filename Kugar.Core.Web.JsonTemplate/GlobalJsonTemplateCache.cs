@@ -163,15 +163,12 @@ namespace Kugar.Core.Web.JsonTemplate
             jsonResolver = JsonConvert.DefaultSettings?.Invoke().ContractResolver as DefaultContractResolver;
             //var _defaultSettings = JsonConvert.DefaultSettings?.Invoke();
 #endif
-            
 
-            var builder = new JsonTemplateObjectBuilder<TModel>(
+            var builder = new RootTemplateBuilder<TModel>(
                 new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
                 generator,
                 schemaResolver);
-
-
-
+            
             var b = new TBuilder();
 
             builder.Start();

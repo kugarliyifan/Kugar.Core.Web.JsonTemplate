@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq.Expressions;
-using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Kugar.Core.Web.JsonTemplate.Helpers;
 using Microsoft.Extensions.Logging;
@@ -14,25 +12,11 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IChildObjectBuilder<TCurrentModel> : ITemplateBuilder<TCurrentModel>,IDisposable
+    public interface IChildObjectBuilder<TParentModel, TCurrentModel> : ITemplateBuilder<TCurrentModel>,IDisposable
     {
-        IArrayBuilder<TArrayElement> AddArrayObject<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
-            bool isNull = false,
-            string description = "",
-            Func<IJsonTemplateBuilderContext<TArrayElement>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender = null
-        );
 
-        IChildObjectBuilder<TCurrentModel>  AddArrayValue<TArrayElement>(string propertyName,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory,
-            bool isNull = false,
-            string description = "",
-            //Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheckExp = null,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifCheckExp = null
-        );
 
-        IChildObjectBuilder<TCurrentModel> Start();
+        TemplateBuilderBase<TParentModel, TCurrentModel> Start();
 
         public string DisplayPropertyName { get; }
 
@@ -49,12 +33,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         
     }
     
-    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : TemplateBuilderBase<TParentModel,TCurrentModel>,IDisposable
+    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : TemplateBuilderBase<TParentModel, TCurrentModel> 
     {
         private bool _isNewObject = false;
         
         private Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> _childObjFactory;
         private string _propertyName = "";
+        private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifCheckExp = null;
 
         public ChildJsonTemplateObjectBuilder(
             string propertyName,
@@ -72,6 +57,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             _childObjFactory = childObjFactory;
             _isNewObject = isNewObject;
             _propertyName = propertyName;
+            _ifCheckExp = ifCheckExp;
         }
         
         public ITemplateBuilder<TCurrentModel> Start()
@@ -86,7 +72,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Parent.Pipe.Add(invoke);
         }
         
-        public void Dispose()
+        public override void Dispose()
         {
             End();
         }
@@ -113,7 +99,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 PropertyName = DisplayPropertyName
             };
 
-            if (!(IfCheckExp?.Invoke(newContext) ?? true))
+            if (!(_ifCheckExp?.Invoke(newContext) ?? true))
             {
                 return;
             }
@@ -144,122 +130,6 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
     }
 
-    public struct PropertyInvoker<TCurrentModel, TNewChildModel>
-    {
-        public string PropertyName { set; get; }
 
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp { set; get; }
 
-        public string ParentDisplayName { set; get; }
-
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory { set; get; }
-
-        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TCurrentModel> context)
-        {
-            context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
-
-            if (context.Model==null)
-            {
-                Debugger.Break();
-                Trace.WriteLine($"正在输出:{context.PropertyName}");
-                return;
-            }
-
-            if (!(ifCheckExp?.Invoke(context) ?? true))
-            {
-                return;
-            }
-
-            TNewChildModel value = default;
-
-            try
-            {
-                value = valueFactory(context);
-            }
-            catch (Exception e)
-            {
-                throw new DataFactoryException($"数据生成错误:{PropertyName}", e, context);
-            }
-
-            try
-            {
-                writer.WritePropertyName(PropertyName);
-                 
-                if (value != null)
-                {
-                    writer.WriteValue(value);
-                }
-                else
-                {
-                    writer.WriteNull();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new OutputRenderException(context, $"输出参数错误:{PropertyName}", e);
-            }
-        }
-    }
-
-    public struct ArrayValueInvoker<TCurrentModel, TArrayElement>
-    {
-        public string PropertyName { set; get; }
-
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory { set; get; }
-
-        public Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender { set; get; }
-
-        public string ParentDisplayName { set; get; }
-
-        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TCurrentModel> context)
-        {
-            context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
-
-            IEnumerable<TArrayElement> data = null;
-
-            try
-            {
-                data = valueFactory(context);
-            }
-            catch (Exception e)
-            {
-
-                throw new DataFactoryException($"数据生成错误:{ParentDisplayName}", e, context);
-            }
-
-            try
-            {
-
-                if (!data.HasData() && ifNullRender != null)
-                {
-                    var c = new JsonTemplateBuilderContext<IEnumerable<TArrayElement>>(context.HttpContext,
-                        context.RootModel, data, context.JsonSerializerSettings);
-
-                    if (!ifNullRender(c))
-                    {
-                        return;
-                    }
-                }
-
-                writer.WritePropertyName(PropertyName);
-
-                writer.WriteStartArray();
-
-                if (data.HasData())
-                {
-                    foreach (var value in data)
-                    {
-                        context.Serializer.Serialize(writer, value);
-                        //await writer.WriteValueAsync(value);
-                    }
-                }
-
-                writer.WriteEndArray();
-            }
-            catch (Exception e)
-            {
-                throw new OutputRenderException(context, $"数据输出错误:{context.PropertyName}", e);
-            }
-        }
-    }
 }

@@ -22,10 +22,10 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         /// 构建内层ReturnData属性数组Item内部的参数,对builder参数不要使用using
         /// </summary>
         /// <param name="builder"></param>
-        protected abstract void BuildReturnDataScheme(IArrayBuilder<TElement> builder);
+        protected abstract void BuildReturnDataScheme(IArrayBuilder<IEnumerable<TElement>,TElement> builder);
         
 
-        protected virtual IArrayBuilder<TElement> BuildWrap(IObjectBuilder<IEnumerable<TElement>> builder)
+        protected virtual IArrayBuilder<IEnumerable<TElement>,TElement> BuildWrap(ITemplateBuilder<IEnumerable<TElement>> builder)
         {
             builder.Pipe.Add((writer, context) =>
             {
@@ -41,7 +41,7 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             return builder.AddArrayObject<TElement>("returnData", x => x.Model);
         }
 
-        public override void BuildScheme(IObjectBuilder<IEnumerable<TElement>> builder)
+        public override void BuildScheme(ITemplateBuilder<IEnumerable<TElement>> builder)
         {
             using (var b = BuildWrap(builder))
             {

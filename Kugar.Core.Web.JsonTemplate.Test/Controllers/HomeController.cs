@@ -121,23 +121,23 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class Test3Template : WrapResultReturnJsonTemplateBase<IPagedList<(Input input, AP ap)>>
     {
-        protected override void BuildReturnDataScheme(IChildObjectBuilder<IPagedList<(Input input, AP ap)>> builder)
+        protected override void BuildReturnDataScheme(ITemplateBuilder<IPagedList<(Input input, AP ap)>> builder)
         {
             using (var b = builder.FromPagedList(x => x.Model.Cast(y =>
-            {
-                //return new
-                //{
-                //    Item = y.input, AP = y.ap
-                //};
-                //throw new Exception("sdfs");
-                return (Item: y.input,AP: y.ap);
-            })))
+                   {
+                       //return new
+                       //{
+                       //    Item = y.input, AP = y.ap
+                       //};
+                       //throw new Exception("sdfs");
+                       return (Item: y.input, AP: y.ap);
+                   })))
             {
                 b.AddProperties(x => x.Item.Ints,
-                        x => x.Item.Strr,
-                        x => x.AP.int2,
-                        x => x.AP.str2,
-                        x => x.AP.str3);
+                    x => x.Item.Strr,
+                    x => x.AP.int2,
+                    x => x.AP.str2,
+                    x => x.AP.str3);
             }
         }
     }
@@ -145,10 +145,10 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class TestTemplate2 : WrapResultReturnJsonTemplateBase<Test<string, string>>
     {
-        protected override void BuildReturnDataScheme(IChildObjectBuilder<Test<string, string>> builder)
+        protected override void BuildReturnDataScheme(ITemplateBuilder<Test<string, string>> builder)
         {
-            builder.AddProperty(x=>x.Prop1)
-                .AddProperty("Prop2",x=>x.Model.Prop2,"sdfsfsf");
+            builder.AddProperty(x => x.Prop1)
+                .AddProperty("Prop2", x => x.Model.Prop2, "sdfsfsf");
             builder.AddProperty("Prop4", x => DateTime.Now)
                 .AddProperty("prop3", x => x.Model.Prop3.sss2, "测试属性2")
                 ;
@@ -164,8 +164,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
             builder.AddArrayValue("arrayTest", x => x.Model.ArrayTest);
         }
-        
-        
+
         protected override ResultReturnFactory<Test<string, string>> ResultFactory =>
             (c) => new FailResultReturn("sdfs");
     }
@@ -176,20 +175,15 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         //{
         //    builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
         //}
-
-        protected override void BuildReturnDataScheme(IArrayBuilder<AP> builder)
+        
+        protected override void BuildReturnDataScheme(IArrayBuilder<IEnumerable<AP>, AP> builder)
         {
             builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
 
-            using (var b=builder.AddArrayObject("List",x=>x.Model.List))
+            using (var b = builder.AddArrayObject("List", x => x.Model.List))
             {
                 b.AddProperties(x => x.OO, x => x.SSS);
             }
-        }
-
-        public override void BuildScheme(IObjectBuilder<IEnumerable<AP>> builder)
-        {
-            throw new NotImplementedException();
         }
     }
 

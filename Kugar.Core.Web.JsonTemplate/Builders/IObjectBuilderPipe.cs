@@ -22,7 +22,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
     }
 
 
-    public interface ITemplateBuilder<TModel> : IObjectBuilderPipe<TModel>, IObjectBuilderInfo
+    public interface ITemplateBuilder<TModel> : IObjectBuilderPipe<TModel>, IObjectBuilderInfo,IDisposable
     {
         ITemplateBuilder<TModel> AddProperty<TValue>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TValue> valueFactory,
@@ -32,11 +32,22 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Type newValueType = null,
             Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null);
 
-        IObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
+        ITemplateBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
             Func<IJsonTemplateBuilderContext<TChildModel>, bool> ifCheck = null);
+
+        ITemplateBuilder<TModel> AddArrayValue<TValue>(string propertyName,
+            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TValue>> valueFactory, bool isNull = false,
+            string description = "", Func<IJsonTemplateBuilderContext<IEnumerable<TValue>>, bool> ifCheckExp = null);
+
+        IArrayBuilder<TModel,TArrayNewElement> AddArrayObject<TArrayNewElement>(
+            string propertyName,
+            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayNewElement>> valueFactory,
+            bool isNull = false,
+            string description = "",
+            Func<IJsonTemplateBuilderContext<TArrayNewElement>, bool> ifCheckExp = null);
 
     }
 
@@ -53,13 +64,13 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             DisplayPropertyName = displayPropertyName;
 
-            this.SchemaBuilder = schemeBuilder;
+            SchemaBuilder = schemeBuilder;
 
-            this.Generator = generator;
+            Generator = generator;
 
-            this.Resolver = resolver;
+            Resolver = resolver;
 
-            this.Parent = parent;
+            Parent = parent;
 
             ModelType = typeof(TModel);
 
@@ -100,7 +111,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public virtual IObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
+        public virtual ITemplateBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
@@ -120,7 +131,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var childSchemeBuilder = SchemaBuilder.AddObjectProperty(propertyName, description, isNull);
 
-            return new ChildJsonTemplateObjectBuilder<TModel, TChildModel>(
+            return new ChildJsonTemplateObjectBuilder<TModel,TChildModel>(
                 propertyName,
                 $"{DisplayPropertyName}.{propertyName}",
                 this,
@@ -131,7 +142,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 true, ifCheck).Start();
         }
 
-        public virtual IArrayBuilder<TArrayNewElement> AddArrayObject<TArrayNewElement>(
+        public virtual IArrayBuilder<TModel,TArrayNewElement> AddArrayObject<TArrayNewElement>(
             string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TArrayNewElement>> valueFactory,
             bool isNull = false,
@@ -229,5 +240,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public virtual IObjectBuilderPipe<TParentModel> Parent { set; get; }
 
         public virtual Func<IJsonTemplateBuilderContext<TModel>, bool> IfCheckExp { get; }
+
+        public abstract void Dispose();
     }
+
 }
