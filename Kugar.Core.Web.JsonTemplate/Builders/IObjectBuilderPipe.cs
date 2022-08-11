@@ -100,7 +100,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public virtual ITemplateBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
+        public virtual IObjectBuilder<TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
