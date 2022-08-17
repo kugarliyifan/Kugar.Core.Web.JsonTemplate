@@ -75,7 +75,7 @@ namespace Kugar.Core.Web.JsonTemplate
                 {
                     //此处代码用于防止传入的modelType无法构建JsonTemplateActionResult的TModel泛型,比如定义的是 IEnumerable,但传入的modelType是Array的情况
                     var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && 
-                        (x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>) || x.GetGenericTypeDefinition()==typeof(JsonArrayTemplateBase<>))
+                        (x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>) /*|| x.GetGenericTypeDefinition()==typeof(JsonArrayTemplateBase<>)*/)
                         ); 
 
                     var mtype = t.GetGenericArguments()[0];

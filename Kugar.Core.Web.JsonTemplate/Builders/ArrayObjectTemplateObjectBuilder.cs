@@ -59,7 +59,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public override IList<PipeActionBuilder<TRootModel, TElementModel>> Pipe => _pipe;
 
-        public IArrayBuilder<TRootModel, TParentModel, TElementModel> End()
+        public virtual IArrayBuilder<TRootModel, TParentModel, TElementModel> End()
         {
             _parent.Add((writer, context) =>
             {

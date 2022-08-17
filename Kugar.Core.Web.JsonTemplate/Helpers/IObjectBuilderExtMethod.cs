@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Builders;
@@ -136,6 +137,56 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                     .AddProperty("paySign", x => x.Model.GetString("paySign", "", StringComparison.CurrentCultureIgnoreCase), "签名")
                     .AddProperty("total_fee", x => x.Model.GetString("total_fee", "", StringComparison.CurrentCultureIgnoreCase), "支付金额", ifCheckExp: x => x.Model.ContainsKey("total_fee"))
                     ;
+            }
+
+            return builder;
+        }
+
+        /// <summary>
+        /// 添加一个object并直接添加进指定的属性,并且不需要使用using的方式
+        /// </summary>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TChildModel"></typeparam>
+        /// <param name="builder"></param>
+        /// <param name="propName"></param>
+        /// <param name="objectValueFunc"></param>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        public static ITemplateBuilder<TRootModel, TModel> AddObjectProperties<TRootModel,TModel, TChildModel>(
+            this ITemplateBuilder<TRootModel, TModel> builder,
+            string propName,
+            Func<IJsonTemplateBuilderContext<TRootModel,TModel>, TChildModel> objectValueFunc,
+            params Expression<Func<TChildModel, object>>[] properties)
+        {
+            using (var b = builder.AddObject(propName, objectValueFunc))
+            {
+                b.AddProperties(properties);
+            }
+
+            return builder;
+        }
+
+        /// <summary>
+        /// 添加一个数组对象,并添加指定属性,且无需使用using
+        /// </summary>
+        /// <typeparam name="TRootModel"></typeparam>
+        /// <typeparam name="TModel"></typeparam>
+        /// <typeparam name="TNewElement"></typeparam>
+        /// <param name="builder"></param>
+        /// <param name="propName"></param>
+        /// <param name="objectValueFunc"></param>
+        /// <param name="properties"></param>
+        /// <returns></returns>
+        public static ITemplateBuilder<TRootModel, TModel> AddArrayObjectProperties<TRootModel, TModel,TNewElement>(
+            this ITemplateBuilder<TRootModel, TModel> builder,
+            string propName,
+            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TNewElement>> objectValueFunc,
+            params Expression<Func<TNewElement, object>>[] properties
+        )
+        {
+            using (var b = builder.AddArrayObject(propName, objectValueFunc))
+            {
+                b.AddProperties(properties);
             }
 
             return builder;

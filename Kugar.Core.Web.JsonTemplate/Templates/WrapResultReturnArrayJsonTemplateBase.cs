@@ -25,21 +25,21 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         protected abstract void BuildReturnDataScheme(ISameRootArrayBuilder<TElement> builder);
         
 
-        protected virtual SameRootArrayBuilder<TElement> BuildWrap(RootArrayObjectTemplateBuilder<TElement> builder)
-        {
-            builder.Pipe.Add((writer, context) =>
-            {
-                context.Model = HandleList(context.Model);
-                //return Task.CompletedTask;
-            });
+        //protected virtual SameRootArrayBuilder<TElement> BuildWrap(RootArrayObjectTemplateBuilder<TElement> builder)
+        //{
+        //    builder.Pipe.Add((writer, context) =>
+        //    {
+        //        context.Model = HandleList(context.Model);
+        //        //return Task.CompletedTask;
+        //    });
 
-            using (var b=FromObject(builder,GetResultReturn))
-            {
-                b.AddProperties(x=>x.IsSuccess,x=>x.Message,x=>x.ReturnCode);
-            }
+        //    using (var b=FromObject(builder,GetResultReturn))
+        //    {
+        //        b.AddProperties(x=>x.IsSuccess,x=>x.Message,x=>x.ReturnCode);
+        //    }
 
-            return builder.AddArrayObject("returnData", x => x.Model);
-        }
+        //    return builder.AddArrayObject("returnData", x => x.Model);
+        //}
 
         public override void BuildScheme(RootObjectTemplateBuilder<IEnumerable<TElement>> builder)
         {

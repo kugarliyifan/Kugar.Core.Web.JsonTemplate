@@ -72,31 +72,31 @@ namespace Kugar.Core.Web.JsonTemplate
     }
 
 
-    public abstract class JsonArrayTemplateBase<TArrayElement> : IJsonTemplateBase<IEnumerable<TArrayElement>>
-    {
-        /// <summary>
-        /// 构建属性的输出,builder一定不要使用using
-        /// </summary>
-        /// <param name="builder">属性构建器,,一定不要对builder使用using</param>
-        public abstract void BuildScheme(RootObjectTemplateBuilder<IEnumerable<TArrayElement>> builder);
+    //public abstract class JsonArrayTemplateBase<TArrayElement> : IJsonTemplateBase<IEnumerable<TArrayElement>>
+    //{
+    //    /// <summary>
+    //    /// 构建属性的输出,builder一定不要使用using
+    //    /// </summary>
+    //    /// <param name="builder">属性构建器,,一定不要对builder使用using</param>
+    //    public abstract void BuildScheme(RootObjectTemplateBuilder<IEnumerable<TArrayElement>> builder);
          
 
-        public Type ModelType { get; } = typeof(IEnumerable<TArrayElement>);
+    //    public Type ModelType { get; } = typeof(IEnumerable<TArrayElement>);
 
-        public ITemplateBuilder<IEnumerable<TArrayElement>, TNewObject> FromObject<TNewObject>(RootArrayObjectTemplateBuilder<TArrayElement> builder,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>, TNewObject> objectFactory
-        )
-        {
-            if (objectFactory == null)
-            {
-                throw new ArgumentNullException(nameof(objectFactory));
-            }
+    //    public ITemplateBuilder<IEnumerable<TArrayElement>, TNewObject> FromObject<TNewObject>(RootArrayObjectTemplateBuilder<TArrayElement> builder,
+    //        Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>, TNewObject> objectFactory
+    //    )
+    //    {
+    //        if (objectFactory == null)
+    //        {
+    //            throw new ArgumentNullException(nameof(objectFactory));
+    //        }
 
-            return new ChildJsonTemplateObjectBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>, TNewObject>("", "", builder,
-                objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
-        }
+    //        return new ChildJsonTemplateObjectBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>, TNewObject>("", "", builder,
+    //            objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
+    //    }
 
-    }
+    //}
 
 
 }

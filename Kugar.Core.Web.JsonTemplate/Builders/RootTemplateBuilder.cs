@@ -11,7 +11,7 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public class RootObjectTemplateBuilder<TModel>: IObjectBuilderPipe<TModel,TModel>, IObjectBuilderInfo
+    public class RootObjectTemplateBuilder<TModel> : ITemplateBuilder<TModel, TModel>
     {
         public RootObjectTemplateBuilder(
             NSwagSchemeBuilder schemeBuilder,
@@ -30,7 +30,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 writer.WriteStartObject();
             });
-             
+
         }
 
         public virtual void End()
@@ -52,8 +52,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         public virtual Type ModelType { get; } = typeof(TModel);
 
-        public RootObjectTemplateBuilder<TModel> AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel,TModel>, TValue> valueFactory, string description = "",
-            bool isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel,TModel>, bool> ifCheckExp = null)
+        public ITemplateBuilder<TModel, TModel> AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel, TModel>, TValue> valueFactory, string description = "",
+            bool isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel, TModel>, bool> ifCheckExp = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -79,7 +79,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
-        public virtual ITemplateBuilder<TModel,TChildModel> AddObject<TChildModel>(string propertyName,
+        public virtual ITemplateBuilder<TModel, TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel, TModel>, TChildModel> valueFactory,
             bool isNull = false,
             string description = "",
@@ -196,19 +196,19 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            var s = new SameRootArrayBuilder<TArrayNewElement>(propertyName, 
+            var s = new SameRootArrayBuilder<TArrayNewElement>(propertyName,
                 propertyName,
                 (IObjectBuilderPipe<IEnumerable<TArrayNewElement>, IEnumerable<TArrayNewElement>>)this,
-                s1, 
-                Generator, 
+                s1,
+                Generator,
                 Resolver,
-                (t)=>ifCheckExp?.Invoke(new JsonTemplateBuilderContext<TModel, TArrayNewElement>(t.HttpContext,(TModel)t.RootModel,t.Model,t.JsonSerializerSettings,new Lazy<TemplateData>(t.GlobalTemporaryData)))??true);
+                (t) => ifCheckExp?.Invoke(new JsonTemplateBuilderContext<TModel, TArrayNewElement>(t.HttpContext, (TModel)t.RootModel, t.Model, t.JsonSerializerSettings, new Lazy<TemplateData>(t.GlobalTemporaryData))) ?? true);
 
             return s;
         }
 
 
-        public virtual RootObjectTemplateBuilder<TModel> AddArrayValue<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel, TModel>, IEnumerable<TValue>> valueFactory, bool isNull = false,
+        public virtual ITemplateBuilder<TModel, TModel> AddArrayValue<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel, TModel>, IEnumerable<TValue>> valueFactory, bool isNull = false,
             string description = "", Func<IJsonTemplateBuilderContext<TModel, IEnumerable<TValue>>, bool> ifNullRender = null)
         {
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
@@ -237,101 +237,100 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         }
     }
 
-    public class  RootArrayObjectTemplateBuilder<TArrayElement> : RootObjectTemplateBuilder<IEnumerable<TArrayElement>>
-    {
-        private List<PipeActionBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>> _pipe = new List<PipeActionBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>>();
-        
-        public virtual SameRootArrayBuilder<TArrayElement> AddArrayObject(
-            string propertyName,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>, IEnumerable<TArrayElement>> valueFactory,
-            bool isNull = false,
-            string description = "",
-            Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, TArrayElement>, bool> ifCheckExp = null)
-        {
-            propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
+    //public class RootArrayObjectTemplateBuilder<TArrayElement> : RootObjectTemplateBuilder<IEnumerable<TArrayElement>>
+    //{
+    //    private List<PipeActionBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>> _pipe = new List<PipeActionBuilder<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>>();
 
-            if (!string.IsNullOrWhiteSpace(propertyName))
-            {
-                Pipe.Add((writer, model) =>
-                {
-                    writer.WritePropertyName(propertyName);
-                });
-            }
-            else
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
+    //    public virtual SameRootArrayBuilder<TArrayElement> AddArrayObject(
+    //        string propertyName,
+    //        Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, IEnumerable<TArrayElement>>, IEnumerable<TArrayElement>> valueFactory,
+    //        bool isNull = false,
+    //        string description = "",
+    //        Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>, TArrayElement>, bool> ifCheckExp = null)
+    //    {
+    //        propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
 
-            var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
+    //        if (!string.IsNullOrWhiteSpace(propertyName))
+    //        {
+    //            Pipe.Add((writer, model) =>
+    //            {
+    //                writer.WritePropertyName(propertyName);
+    //            });
+    //        }
+    //        else
+    //        {
+    //            throw new ArgumentNullException(nameof(propertyName));
+    //        }
 
-            var s = new SameRootArrayBuilder<TArrayElement>(propertyName, propertyName, this, s1, Generator, Resolver, ifCheckExp);
+    //        var s1 = SchemaBuilder.AddObjectArrayProperty(propertyName, desciption: description, nullable: isNull);
 
-            return s;
-        }
+    //        var s = new SameRootArrayBuilder<TArrayElement>(propertyName, propertyName, this, s1, Generator, Resolver, ifCheckExp);
 
-        public override void Start()
-        {
-            Pipe.Add((writer, context) =>
-            {
-                writer.WriteStartArray();
-            }); 
-        }
+    //        return s;
+    //    }
 
-        public override void End()
-        {
-            Pipe.Add((writer, context) =>
-            {
-                writer.WriteEndArray();
-            });
+    //    public override void Start()
+    //    {
+    //        Pipe.Add((writer, context) =>
+    //        {
+    //            writer.WriteStartArray();
+    //        });
+    //    }
 
-        }
-         
-        public override Type ModelType { get; } = typeof(IEnumerable<TArrayElement>);
+    //    public override void End()
+    //    {
+    //        Pipe.Add((writer, context) =>
+    //        {
+    //            writer.WriteEndArray();
+    //        });
 
-        public RootArrayObjectTemplateBuilder(NSwagSchemeBuilder schemeBuilder, JsonSchemaGenerator generator, JsonSchemaResolver resolver) : base(schemeBuilder, generator, resolver)
-        {
-        }
-    }
+    //    }
+
+    //    public override Type ModelType { get; } = typeof(IEnumerable<TArrayElement>);
+
+    //    public RootArrayObjectTemplateBuilder(NSwagSchemeBuilder schemeBuilder, JsonSchemaGenerator generator, JsonSchemaResolver resolver) : base(schemeBuilder, generator, resolver)
+    //    {
+    //    }
+    //}
 
     public class SameRootTemplateBuilder<TRootModel> : ChildJsonTemplateObjectBuilder<TRootModel, TRootModel, TRootModel>
     {
- 
+
 
         public override void Dispose()
         {
             End();
         }
 
-        public SameRootTemplateBuilder(string propertyName, 
-            string displayPropertyName, 
-            IObjectBuilderPipe<TRootModel, TRootModel> parent,  
+        public SameRootTemplateBuilder(string propertyName,
+            string displayPropertyName,
+            IObjectBuilderPipe<TRootModel, TRootModel> parent,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
-            JsonSchemaResolver resolver, 
-            bool isNewObject, 
-            Func<IJsonTemplateBuilderContext<TRootModel, TRootModel>, bool> ifCheckExp = null) : 
-            base(propertyName, displayPropertyName, parent, (c)=>c.Model, schemeBuilder, generator, resolver, isNewObject, ifCheckExp)
+            JsonSchemaResolver resolver,
+            bool isNewObject,
+            Func<IJsonTemplateBuilderContext<TRootModel, TRootModel>, bool> ifCheckExp = null) :
+            base(propertyName, displayPropertyName, parent, (c) => c.Model, schemeBuilder, generator, resolver, isNewObject, ifCheckExp)
         {
         }
     }
 
-    public interface
-        ISameRootArrayBuilder<TElementModel> : IArrayBuilder<IEnumerable<TElementModel>, IEnumerable<TElementModel>,
-            TElementModel>
+    public interface ISameRootArrayBuilder<TElementModel>
+        : IArrayBuilder<IEnumerable<TElementModel>, IEnumerable<TElementModel>,TElementModel>
     {
 
     }
 
-    public class  SameRootArrayBuilder<TElementModel> : ArrayObjectTemplateObjectBuilder<IEnumerable<TElementModel>, IEnumerable<TElementModel>, TElementModel>  , ISameRootArrayBuilder<TElementModel>
+    public class SameRootArrayBuilder<TElementModel> : ArrayObjectTemplateObjectBuilder<IEnumerable<TElementModel>, IEnumerable<TElementModel>, TElementModel>, ISameRootArrayBuilder<TElementModel>
     {
-        public SameRootArrayBuilder(string properyName, 
-            string displayPropertyName, 
-            IObjectBuilderPipe<IEnumerable<TElementModel>, IEnumerable<TElementModel>> parent,  
-            NSwagSchemeBuilder schemeBuilder, 
-            JsonSchemaGenerator generator, 
-            JsonSchemaResolver resolver, 
-            Func<IJsonTemplateBuilderContext<IEnumerable<TElementModel>, TElementModel>, bool> ifCheckExp = null) 
-            : base(properyName, displayPropertyName, parent, (c)=>c.Model, schemeBuilder, generator, resolver, ifCheckExp)
+        public SameRootArrayBuilder(string properyName,
+            string displayPropertyName,
+            IObjectBuilderPipe<IEnumerable<TElementModel>, IEnumerable<TElementModel>> parent,
+            NSwagSchemeBuilder schemeBuilder,
+            JsonSchemaGenerator generator,
+            JsonSchemaResolver resolver,
+            Func<IJsonTemplateBuilderContext<IEnumerable<TElementModel>, TElementModel>, bool> ifCheckExp = null)
+            : base(properyName, displayPropertyName, parent, (c) => c.Model, schemeBuilder, generator, resolver, ifCheckExp)
         {
         }
     }
