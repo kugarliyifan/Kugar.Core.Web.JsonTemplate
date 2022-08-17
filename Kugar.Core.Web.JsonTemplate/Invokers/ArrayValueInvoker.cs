@@ -11,17 +11,17 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
     /// </summary>
     /// <typeparam name="TCurrentModel"></typeparam>
     /// <typeparam name="TArrayElement"></typeparam>
-    public struct ArrayValueInvoker<TCurrentModel, TArrayElement>
+    public struct ArrayValueInvoker<TRootModel, TCurrentModel, TArrayElement>
     {
         public string PropertyName { set; get; }
 
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, IEnumerable<TArrayElement>> valueFactory { set; get; }
+        public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, IEnumerable<TArrayElement>> valueFactory { set; get; }
 
-        public Func<IJsonTemplateBuilderContext<IEnumerable<TArrayElement>>, bool> ifNullRender { set; get; }
+        public Func<IJsonTemplateBuilderContext<TRootModel, IEnumerable<TArrayElement>>, bool> ifNullRender { set; get; }
 
         public string ParentDisplayName { set; get; }
 
-        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TCurrentModel> context)
+        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TRootModel, TCurrentModel> context)
         {
             context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
 
@@ -42,7 +42,7 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
                 if (!data.HasData() && ifNullRender != null)
                 {
-                    var c = new JsonTemplateBuilderContext<IEnumerable<TArrayElement>>(context.HttpContext,
+                    var c = new JsonTemplateBuilderContext<TRootModel, IEnumerable<TArrayElement>>(context.HttpContext,
                         context.RootModel, data, context.JsonSerializerSettings);
 
                     if (!ifNullRender(c))

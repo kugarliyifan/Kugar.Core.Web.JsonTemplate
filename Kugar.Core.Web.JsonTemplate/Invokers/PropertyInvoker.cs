@@ -10,17 +10,17 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
     /// </summary>
     /// <typeparam name="TCurrentModel"></typeparam>
     /// <typeparam name="TNewChildModel"></typeparam>
-    public struct PropertyInvoker<TCurrentModel, TNewChildModel>
+    public struct PropertyInvoker<TRootModel, TCurrentModel, TNewChildModel>
     {
         public string PropertyName { set; get; }
 
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp { set; get; }
+        public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, bool> ifCheckExp { set; get; }
 
         public string ParentDisplayName { set; get; }
 
-        public Func<IJsonTemplateBuilderContext<TCurrentModel>, TNewChildModel> valueFactory { set; get; }
+        public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, TNewChildModel> valueFactory { set; get; }
 
-        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TCurrentModel> context)
+        public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TRootModel, TCurrentModel> context)
         {
             context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
 

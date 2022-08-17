@@ -78,6 +78,27 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
             return this.Json<Test3Template>(t);
         }
 
+        [HttpGet, ProducesResponseType(typeof(ResultReturn<int>), 200)]
+        public async Task<IActionResult> Index6(/*[Required]string p1,[Required]int o3*/)
+        {
+            var t = new VM_PagedList<(Input input, AP ap)>(
+                Enumerable.Repeat(
+                    (new Input() { Ints = "222", Strr = 4 }, new AP() { int2 = 4, str2 = "str2", str3 = "str3" }), 20),
+                pageSize: 20,
+                totalCount: 200
+            );
+
+            var d = (Enumerable.Repeat(
+                        new AP() { int2 = 4, str2 = "str2", str3 = "str3" }, 30),
+                    new AP() { int2 = 4, str2 = "str2", str3 = "str3" }
+                );
+
+            //var t = new JsonTemplateActionResult<TestTemplate3, IEnumerable<AP>>(typeof(TestTemplate3));
+
+            return this.Json<TestTemplate3>(Enumerable.Repeat(
+                new AP() { int2 = 4, str2 = "str2", str3 = "str3" }, 30));
+        }
+
         [HttpPost, FromBodyJson]
         public async Task<IActionResult> Index5((string io, int o3) obj)
         {
@@ -121,7 +142,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class Test3Template : WrapResultReturnJsonTemplateBase<IPagedList<(Input input, AP ap)>>
     {
-        protected override void BuildReturnDataScheme(ITemplateBuilder<IPagedList<(Input input, AP ap)>> builder)
+        protected override void BuildReturnDataScheme(SameRootTemplateBuilder<IPagedList<(Input input, AP ap)>> builder)
         {
             using (var b = builder.FromPagedList(x => x.Model.Cast(y =>
                    {
@@ -145,7 +166,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
 
     public class TestTemplate2 : WrapResultReturnJsonTemplateBase<Test<string, string>>
     {
-        protected override void BuildReturnDataScheme(ITemplateBuilder<Test<string, string>> builder)
+        protected override void BuildReturnDataScheme(SameRootTemplateBuilder<Test<string, string>> builder)
         {
             builder.AddProperty(x => x.Prop1)
                 .AddProperty("Prop2", x => x.Model.Prop2, "sdfsfsf");
@@ -176,7 +197,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
         //    builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
         //}
         
-        protected override void BuildReturnDataScheme(IArrayBuilder<IEnumerable<AP>, AP> builder)
+        protected override void BuildReturnDataScheme(ISameRootArrayBuilder<AP> builder)
         {
             builder.AddProperties(x => x.int2, x => x.str2, x => x.str3);
 
@@ -185,6 +206,7 @@ namespace Kugar.Core.Web.JsonTemplate.Test.Controllers
                 b.AddProperties(x => x.OO, x => x.SSS);
             }
         }
+        
     }
 
     public static class Ext

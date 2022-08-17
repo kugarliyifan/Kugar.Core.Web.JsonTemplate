@@ -22,10 +22,10 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
         /// 构建内层ReturnData属性数组Item内部的参数,对builder参数不要使用using
         /// </summary>
         /// <param name="builder"></param>
-        protected abstract void BuildReturnDataScheme(IArrayBuilder<IEnumerable<TElement>,TElement> builder);
+        protected abstract void BuildReturnDataScheme(ISameRootArrayBuilder<TElement> builder);
         
 
-        protected virtual IArrayBuilder<IEnumerable<TElement>,TElement> BuildWrap(ITemplateBuilder<IEnumerable<TElement>> builder)
+        protected virtual SameRootArrayBuilder<TElement> BuildWrap(RootArrayObjectTemplateBuilder<TElement> builder)
         {
             builder.Pipe.Add((writer, context) =>
             {
@@ -33,23 +33,43 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
                 //return Task.CompletedTask;
             });
 
-            using (var b=builder.FromObject(GetResultReturn))
+            using (var b=FromObject(builder,GetResultReturn))
             {
                 b.AddProperties(x=>x.IsSuccess,x=>x.Message,x=>x.ReturnCode);
             }
 
-            return builder.AddArrayObject<TElement>("returnData", x => x.Model);
+            return builder.AddArrayObject("returnData", x => x.Model);
         }
 
-        public override void BuildScheme(ITemplateBuilder<IEnumerable<TElement>> builder)
+        public override void BuildScheme(RootObjectTemplateBuilder<IEnumerable<TElement>> builder)
         {
-            using (var b = BuildWrap(builder))
+            builder.Pipe.Add((writer, context) =>
             {
-                BuildReturnDataScheme(b);
+                context.Model = HandleList(context.Model);
+                //return Task.CompletedTask;
+            });
+
+            using (var b = FromObject(builder, GetResultReturn))
+            {
+                b.AddProperties(x => x.IsSuccess, x => x.Message, x => x.ReturnCode);
             }
+
+            using (var t = builder.AddLiteArrayObject<IEnumerable<TElement>,TElement>("returnData", x => x.Model))
+            {
+                BuildReturnDataScheme(t);
+            }
+
+            
+
+            //return builder.AddArrayObject("returnData", x => x.Model);
+
+            //using (var b = BuildWrap(builder))
+            //{
+            //    BuildReturnDataScheme(b);
+            //}
         }
 
-        protected virtual IResultReturn GetResultReturn(IJsonTemplateBuilderContext<IEnumerable<TElement>> context)
+        protected virtual ResultReturn GetResultReturn(IJsonTemplateBuilderContext<IEnumerable<TElement>> context)
         {
             return _defaultResultFactory(context);
         }
@@ -64,6 +84,6 @@ namespace Kugar.Core.Web.JsonTemplate.Templates
             return src;
         }
 
-        public delegate ResultReturn ResultReturnArrayFactory<TModel>(IJsonTemplateBuilderContext<TModel> context);
+        public delegate ResultReturn ResultReturnArrayFactory<TModel>(IJsonTemplateBuilderContext<IEnumerable<TElement>> context);
     }
 }

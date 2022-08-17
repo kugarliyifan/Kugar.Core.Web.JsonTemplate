@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Fasterflect;
+using Kugar.Core.ExtMethod;
 using Kugar.Core.Web.JsonTemplate.Builders;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,12 +28,12 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public static IServiceProvider Provider { set; get; }
 
-        public static IObjectBuilderPipe<TModel> GetTemplate<TBuilder, TModel>()
+        public static IObjectBuilderPipe<TModel,TModel> GetTemplate<TBuilder, TModel>()
             where TBuilder : JsonTemplateBase<TModel>, new()
         {
             var builderType = typeof(TBuilder);
 
-            var objectBuilder = (ITemplateBuilder<TModel>)_cache.GetOrAdd(builderType, (type) =>
+            var objectBuilder = (IObjectBuilderPipe<TModel, TModel>)_cache.GetOrAdd(builderType, (type) =>
               {
                   var m = typeof(GlobalJsonTemplateCache)
                       .GetMethod("Build")
@@ -73,19 +74,52 @@ namespace Kugar.Core.Web.JsonTemplate
                 .GetOrAdd(modelType, b =>
                 {
                     //此处代码用于防止传入的modelType无法构建JsonTemplateActionResult的TModel泛型,比如定义的是 IEnumerable,但传入的modelType是Array的情况
-                    var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>));
+                    var t = enumAllParentType(builderType).FirstOrDefault(x => x.IsGenericType && 
+                        (x.GetGenericTypeDefinition() == typeof(JsonTemplateBase<>) || x.GetGenericTypeDefinition()==typeof(JsonArrayTemplateBase<>))
+                        ); 
+
                     var mtype = t.GetGenericArguments()[0];
 
                     Type actionResultType = null;
 
-                    if (mtype==modelType)
+                    if (mtype == modelType)
                     {
-                        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, modelType);    
+                        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, modelType);
                     }
                     else
                     {
-                        actionResultType=typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, mtype);    
+                        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, mtype);
                     }
+
+
+                    //Type actionResultType =  typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType,  mtype); ;
+                     
+                    //if (mtype==modelType)
+                    //{
+                    //    if (modelType.IsIEnumerable())
+                    //    {
+                    //        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, typeof(IEnumerable<>).MakeGenericType(new[]{ modelType }) );
+                    //    }
+                    //    else
+                    //    {
+                    //        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, modelType);
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    if (modelType.IsIEnumerable())
+                    //    {
+                    //        var t1 = typeof(IEnumerable<>).MakeGenericType(new[] { mtype });
+
+                    //        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, modelType);
+                    //    }
+                    //    else
+                    //    {
+                    //        actionResultType = typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, mtype);
+                    //    }
+
+                    //    //actionResultType =typeof(JsonTemplateActionResult<,>).MakeGenericType(builderType, mtype);    
+                    //}
                     return actionResultType.DelegateForCreateInstance(Flags.InstancePublic,
                         typeof(Type));
                 });
@@ -121,7 +155,7 @@ namespace Kugar.Core.Web.JsonTemplate
             }
         }
 
-        public static IObjectBuilderPipe<TModel> Build<TBuilder, TModel>(Type builderType, Type modelType) where TBuilder : JsonTemplateBase<TModel>, new()
+        public static IObjectBuilderPipe<TModel, TModel> Build<TBuilder, TModel>(Type builderType, Type modelType) where TBuilder : JsonTemplateBase<TModel>, new()
         {
             if (Provider==null)
             {
@@ -147,7 +181,6 @@ namespace Kugar.Core.Web.JsonTemplate
 
             var scheme = new JsonSchema();
 
-#if NETCOREAPP3_0 || NETCOREAPP3_1 || NET5_0 || NET6_0
             var jsonOpt = (IOptionsSnapshot<MvcNewtonsoftJsonOptions>)Provider.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
 
             if (jsonOpt?.Value != null)
@@ -158,24 +191,50 @@ namespace Kugar.Core.Web.JsonTemplate
             {
                 jsonResolver = JsonConvert.DefaultSettings?.Invoke().ContractResolver as DefaultContractResolver;
             }
-#endif
-#if NETCOREAPP2_1
-            jsonResolver = JsonConvert.DefaultSettings?.Invoke().ContractResolver as DefaultContractResolver;
-            //var _defaultSettings = JsonConvert.DefaultSettings?.Invoke();
-#endif
+            
+            var b = new TBuilder();
 
-            var builder = new RootTemplateBuilder<TModel>(
+            var builder = new RootObjectTemplateBuilder<TModel>(
                 new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
                 generator,
                 schemaResolver);
-            
-            var b = new TBuilder();
 
             builder.Start();
             b.BuildScheme(builder);
             builder.End();
 
             return builder;
+
+            //if (b.ModelType.IsIEnumerable())
+            //{
+            //    var b2 = b as JsonArrayTemplateBase<TModel>;
+
+            //    var builder = new RootObjectTemplateBuilder<TModel>(
+            //        new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
+            //        generator,
+            //        schemaResolver);
+
+            //    builder.Start();
+            //    b.BuildScheme(builder);
+            //    builder.End();
+
+            //    return (IObjectBuilderPipe<TModel, TModel>)builder;
+            //}
+            //else 
+            //{
+            //    var builder = new RootObjectTemplateBuilder<TModel>(
+            //        new NSwagSchemeBuilder(scheme, s => jsonResolver?.NamingStrategy?.GetPropertyName(s, false) ?? s),
+            //        generator,
+            //        schemaResolver);
+
+            //    builder.Start();
+            //    b.BuildScheme(builder);
+            //    builder.End();
+
+            //    return builder;
+            //} 
+
+
         }
     }
 }

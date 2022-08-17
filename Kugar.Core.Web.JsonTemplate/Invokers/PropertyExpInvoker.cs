@@ -10,7 +10,7 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
     /// </summary>
     /// <typeparam name="TModel"></typeparam>
     /// <typeparam name="TValue"></typeparam>
-    public class PropertyExpInvoker<TModel, TValue>
+    public class PropertyExpInvoker<TRootModel, TModel, TValue>
     {
         private Func<TModel, TValue> _invoke = null;
 
@@ -38,7 +38,7 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
             
         }
 
-        public TValue Invoke(IJsonTemplateBuilderContext<TModel> context)
+        public TValue Invoke(IJsonTemplateBuilderContext<TRootModel, TModel> context)
         {
             var displayName = $"{context.PropertyName}.{NewPropertyName}";
 

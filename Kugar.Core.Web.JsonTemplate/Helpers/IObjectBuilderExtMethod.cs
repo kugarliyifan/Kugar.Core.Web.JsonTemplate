@@ -22,14 +22,14 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="newPropertyName">新属性名,如果需要修改objectPropertyExp输出的属性,则传入该参数</param>
         /// <param name="ifCheckExp">传入一个回调,用于判断在运行时是否添加该属性</param>
         /// <returns></returns>
-        public static ITemplateBuilder<TModel> AddProperty<TModel, TValue>(
-            this ITemplateBuilder<TModel> builder,
-            Expression<Func<TModel, TValue>> objectPropertyExp,
+        public static ITemplateBuilder<TRootModel, TModel> AddProperty<TRootModel, TModel, TValue>(
+            this ITemplateBuilder<TRootModel, TModel> builder,
+            Expression<Func< TModel, TValue>> objectPropertyExp,
             string description = "",
             bool isNull = false,
             object example = null,
             string newPropertyName = null,
-            Func<IJsonTemplateBuilderContext<TModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null
         )
         {
             if (objectPropertyExp == null)
@@ -51,7 +51,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
             }
 
-            var tmp = new PropertyExpInvoker<TModel, TValue>(newPropertyName, objectPropertyExp);
+            var tmp = new PropertyExpInvoker<TRootModel, TModel, TValue>(newPropertyName, objectPropertyExp);
 
             return builder.AddProperty(newPropertyName, tmp.Invoke, description, isNull, example, typeof(TValue),
                 ifCheckExp);
@@ -64,8 +64,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectPropertyExpList">属性表达式</param>
         /// <returns></returns>
-        public static ITemplateBuilder<TModel> AddProperties<TModel>(
-            this ITemplateBuilder<TModel> builder,
+        public static ITemplateBuilder<TRootModel, TModel> AddProperties<TRootModel, TModel>(
+            this ITemplateBuilder<TRootModel, TModel> builder,
             params Expression<Func<TModel, object>>[] objectPropertyExpList
         )
         {
@@ -81,7 +81,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
                 var description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(item));
 
-                var tmp = new PropertyExpInvoker<TModel, object>(propertyName, item);
+                var tmp = new PropertyExpInvoker<TRootModel, TModel, object>(propertyName, item);
 
                 builder.AddProperty(propertyName, tmp.Invoke, description, newValueType: returnType);
 
@@ -98,8 +98,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static ITemplateBuilder<TNewObject> FromObject<TModel, TNewObject>(this ITemplateBuilder<TModel> builder,
-            Func<IJsonTemplateBuilderContext<TModel>, TNewObject> objectFactory
+        public static ITemplateBuilder<TRootModel, TNewObject> FromObject<TRootModel, TModel, TNewObject>(this ITemplateBuilder<TRootModel, TModel> builder,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TNewObject> objectFactory
         )
         {
             if (objectFactory == null)
@@ -107,7 +107,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
                 throw new ArgumentNullException(nameof(objectFactory));
             }
 
-            return new ChildJsonTemplateObjectBuilder<TModel, TNewObject>("","", builder,
+            return new ChildJsonTemplateObjectBuilder<TRootModel, TModel, TNewObject>("","", builder,
                 objectFactory, builder.SchemaBuilder, builder.Generator, builder.Resolver, isNewObject: false).Start();
         }
 
@@ -118,8 +118,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         /// <param name="builder"></param>
         /// <param name="objectFactory"></param>
         /// <returns></returns>
-        public static ITemplateBuilder<TModel> FromWechatPayProperties<TModel>(this ITemplateBuilder<TModel> builder,
-            Func<IJsonTemplateBuilderContext<TModel>, JObject> objectFactory)
+        public static ITemplateBuilder<TRootModel, TModel> FromWechatPayProperties<TRootModel, TModel>(this ITemplateBuilder<TRootModel, TModel> builder,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, JObject> objectFactory)
         {
             if (objectFactory == null)
             {

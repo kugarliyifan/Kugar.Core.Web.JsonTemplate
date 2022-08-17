@@ -12,45 +12,25 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IChildObjectBuilder<TParentModel, TCurrentModel> : ITemplateBuilder<TCurrentModel>,IDisposable
-    {
-
-
-        TemplateBuilderBase<TParentModel, TCurrentModel> Start();
-
-        public string DisplayPropertyName { get; }
-
-        public string PropertyName { get; }
-
-        public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
-            Expression<Func<TCurrentModel, TValue>> objectPropertyExp)
-        {
-            var desc=ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
-            var name = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
-
-            return (name, desc);
-        }
-        
-    }
     
-    public class ChildJsonTemplateObjectBuilder<TParentModel, TCurrentModel> : TemplateBuilderBase<TParentModel, TCurrentModel> 
+    public class ChildJsonTemplateObjectBuilder<TRootModel, TParentModel, TCurrentModel> : TemplateBuilderBase<TRootModel, TParentModel,TCurrentModel> 
     {
         private bool _isNewObject = false;
         
-        private Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> _childObjFactory;
+        private Func<IJsonTemplateBuilderContext<TRootModel, TParentModel>, TCurrentModel> _childObjFactory;
         private string _propertyName = "";
-        private Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> _ifCheckExp = null;
+        private Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, bool> _ifCheckExp = null;
 
         public ChildJsonTemplateObjectBuilder(
             string propertyName,
             string displayPropertyName,
-            IObjectBuilderPipe<TParentModel> parent,
-            Func<IJsonTemplateBuilderContext<TParentModel>, TCurrentModel> childObjFactory,
+            IObjectBuilderPipe<TRootModel, TParentModel> parent,
+            Func<IJsonTemplateBuilderContext<TRootModel, TParentModel>, TCurrentModel> childObjFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver,
             bool isNewObject,
-            Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifCheckExp=null //,
+            Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, bool> ifCheckExp=null //,
             //Func<IJsonTemplateBuilderContext<TCurrentModel>, bool> ifNullRender = null
             ) : base(displayPropertyName,parent,schemeBuilder, generator, resolver, ifCheckExp)
         {
@@ -60,7 +40,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             _ifCheckExp = ifCheckExp;
         }
         
-        public ITemplateBuilder<TCurrentModel> Start()
+        public ITemplateBuilder<TRootModel, TCurrentModel> Start()
         {
             return this;
         }
@@ -77,7 +57,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             End();
         }
 
-        private void invoke(JsonWriter writer, IJsonTemplateBuilderContext<TParentModel> context)
+        private void invoke(JsonWriter writer, IJsonTemplateBuilderContext<TRootModel, TParentModel> context)
         {
             TCurrentModel value;
 
@@ -90,10 +70,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 throw new DataFactoryException("生成数据错误", e, context);
             }
             
-            var c = (JsonTemplateBuilderContext<TParentModel>)context;
+            var c = (JsonTemplateBuilderContext<TRootModel, TParentModel>)context;
 
 
-            var newContext = new JsonTemplateBuilderContext<TCurrentModel>(context.HttpContext, context.RootModel, value, context.JsonSerializerSettings, c._globalTemporaryData)
+            var newContext = new JsonTemplateBuilderContext<TRootModel, TCurrentModel>(context.HttpContext, context.RootModel, value, context.JsonSerializerSettings, c._globalTemporaryData)
             {
                 //PropertyRenderChecker = context.PropertyRenderChecker
                 PropertyName = DisplayPropertyName

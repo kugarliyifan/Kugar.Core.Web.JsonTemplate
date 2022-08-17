@@ -23,7 +23,7 @@ namespace Kugar.Core.Web.JsonTemplate
         
     }
 
-    internal class JsonTemplateActionResult<TBuilder, TModel> : IJsonTemplateActionResult<TBuilder, TModel> where TBuilder : JsonTemplateBase<TModel>, new()
+    public class JsonTemplateActionResult<TBuilder, TModel> : IJsonTemplateActionResult<TBuilder, TModel> where TBuilder : JsonTemplateBase<TModel>, new()
     {
         //private Type _builderType = null;
 
@@ -37,6 +37,8 @@ namespace Kugar.Core.Web.JsonTemplate
         public async Task ExecuteResultAsync(ActionContext context)
         {
             //Debugger.Break();
+
+           
 
             context.HttpContext.Response.ContentType = "application/json";
 
@@ -91,7 +93,7 @@ namespace Kugar.Core.Web.JsonTemplate
                     //throw new ArgumentNullException(nameof(model), $"model转换为{typeof(TModel).Name}失败,请检查传入的model的类型");
                 }
 
-                var modelContext = new JsonTemplateBuilderContext<TModel>(context.HttpContext, model, model, jsonSettings);
+                var modelContext = new JsonTemplateBuilderContext<TModel,TModel>(context.HttpContext, model, model, jsonSettings);
                 //modelContext.PropertyRenderChecker = ((JsonTemplateBase<TModel>) objectBuilder).PropertyRenderCheck;
 
                 foreach (var pipe in objectBuilder.Pipe)

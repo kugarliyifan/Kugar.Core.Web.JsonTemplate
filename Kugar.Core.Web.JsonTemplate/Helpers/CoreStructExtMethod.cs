@@ -13,7 +13,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
     /// </summary>
     public static class CoreStructExtMethod
     {
-        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder<TModel> source,Func<IJsonTemplateBuilderContext<TModel>, bool> resultFactory)
+        public static ITemplateBuilder<TRootModel, TModel> FromReturnResult<TRootModel,TModel>(this ITemplateBuilder<TRootModel, TModel> source,Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> resultFactory)
         {
             source.AddProperty("isSuccess", resultFactory,"本次操作是否成功")
                 .AddProperty("message", x => string.Empty,"操作结果文本")
@@ -23,8 +23,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(this ITemplateBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, string message)> resultFactory)
+        public static ITemplateBuilder<TRootModel, TModel> FromReturnResult<TRootModel, TModel>(this ITemplateBuilder<TRootModel, TModel> source,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, (bool isSuccess, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -40,9 +40,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(
-            this ITemplateBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
+        public static ITemplateBuilder<TRootModel, TModel> FromReturnResult<TRootModel, TModel>(
+            this ITemplateBuilder<TRootModel, TModel> source,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, (bool isSuccess, int returnCode, string message)> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -56,9 +56,9 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddObject("returnData", x => x.Model);
         }
 
-        public static ITemplateBuilder<TModel> FromReturnResult<TModel>(
-            this ITemplateBuilder<TModel> source,
-            Func<IJsonTemplateBuilderContext<TModel>, ResultReturn> resultFactory)
+        public static ITemplateBuilder<TRootModel, TModel> FromReturnResult<TRootModel, TModel>(
+            this ITemplateBuilder<TRootModel, TModel> source,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, ResultReturn> resultFactory)
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -74,10 +74,10 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         }
 
 
-        public static ITemplateBuilder<TNewElement> FromReturnArrayResult<TElement,TNewElement>(
-            this ITemplateBuilder<IEnumerable<TElement>> source,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, ResultReturn> resultFactory,
-            Func<IJsonTemplateBuilderContext<IEnumerable<TElement>>, IEnumerable<TNewElement>> whereFunc ) 
+        public static ITemplateBuilder<TRootModel, TNewElement> FromReturnArrayResult<TRootModel, TElement,TNewElement>(
+            this ITemplateBuilder<TRootModel, IEnumerable<TElement>> source,
+            Func<IJsonTemplateBuilderContext<TRootModel, IEnumerable<TElement>>, ResultReturn> resultFactory,
+            Func<IJsonTemplateBuilderContext<TRootModel, IEnumerable<TElement>>, IEnumerable<TNewElement>> whereFunc ) 
         {
             using (var f = source.FromObject(resultFactory))
             {
@@ -92,8 +92,8 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             return source.AddArrayObject<TNewElement>("returnData", x => whereFunc?.Invoke(x)??null, description: "输出的实际结果");
         }
 
-        public static IArrayBuilder<TModel, TElement> FromPagedList<TModel, TElement>(this ITemplateBuilder<TModel> builder,
-            [NotNull] Func<IJsonTemplateBuilderContext<TModel>, IPagedList<TElement>> valueFactory
+        public static IArrayBuilder<TRootModel, TModel, TElement> FromPagedList<TRootModel, TModel, TElement>(this ITemplateBuilder<TRootModel, TModel> builder,
+            [NotNull] Func<IJsonTemplateBuilderContext<TRootModel, TModel>, IPagedList<TElement>> valueFactory
             )
         {
             if (valueFactory == null)

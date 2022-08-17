@@ -40,19 +40,25 @@ namespace Kugar.Core.Web.JsonTemplate
         ILogger Logger { get; }
     }
 
-    public interface IJsonTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext
+    public interface IJsonTemplateBuilderContext<TModel>: IJsonTemplateBuilderContext
     {
+
         /// <summary>
         /// 传入的Model数据
         /// </summary>
         TModel Model { get; set; }
+    }
 
-        dynamic RootModel { get; }
+    public interface IJsonTemplateBuilderContext<TRootModel, TModel>:IJsonTemplateBuilderContext<TModel>
+    {
+        
+
+        TRootModel RootModel { get; }
 
         //Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { set; get; }
     }
 
-    public interface IJsonArrayTemplateBuilderContext<TModel>:IJsonTemplateBuilderContext<TModel>
+    public interface IJsonArrayTemplateBuilderContext<TRootModel, TModel>:IJsonTemplateBuilderContext<TRootModel, TModel>
     {
         /// <summary>
         /// 在ArrayObject单次循环中的临时数据
@@ -65,13 +71,18 @@ namespace Kugar.Core.Web.JsonTemplate
         IEnumerable<TModel> CurrentArray { set; get; }
     }
 
-    public class JsonTemplateBuilderContext<TModel> : IJsonTemplateBuilderContext<TModel>
+    public class JsonTemplateBuilderContext<TRootModel, TModel> : IJsonTemplateBuilderContext<TRootModel, TModel>
     {
         private Lazy<TemplateData> _temporaryData = new Lazy<TemplateData>();
         internal Lazy<TemplateData> _globalTemporaryData = null;
         private Lazy<ILogger> _loggerFactory = null;
 
-        public JsonTemplateBuilderContext(Microsoft.AspNetCore.Http.HttpContext context,dynamic rootModel, TModel model,JsonSerializerSettings settings,Lazy<TemplateData> globalTemporaryDataFactory=null)
+        public JsonTemplateBuilderContext(
+            Microsoft.AspNetCore.Http.HttpContext context,
+            TRootModel rootModel, 
+            TModel model,
+            JsonSerializerSettings settings,
+            Lazy<TemplateData> globalTemporaryDataFactory=null)
         {
             HttpContext = context;
             Model = model;
@@ -92,7 +103,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
         public TModel Model { get; set; }
 
-        public dynamic RootModel  { get; }
+        public TRootModel RootModel  { get; }
 
         //public Func<IJsonTemplateBuilderContext, string, bool> PropertyRenderChecker { get; set; }
 

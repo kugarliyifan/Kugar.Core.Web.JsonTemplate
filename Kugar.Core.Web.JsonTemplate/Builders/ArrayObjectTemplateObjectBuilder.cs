@@ -12,7 +12,9 @@ using NJsonSchema.Generation;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
-    public interface IArrayBuilder<TParentModel, TElement> : ITemplateBuilder<TElement>,IDisposable
+    public interface IRootArrayBuilder<TParentModel, TElement> :IArrayBuilder<TParentModel, TParentModel, TElement>{}
+
+    public interface IArrayBuilder<TRootModel, TParentModel, TElement> : ITemplateBuilder<TRootModel, TElement>,IDisposable
     {
         public (string propertyName, string desc) GetMemberNameWithDesc<TValue>(
             Expression<Func<TElement, TValue>> objectPropertyExp)
@@ -23,28 +25,29 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return (name, desc);
         }
 
-        IArrayBuilder<TParentModel, TElement> End();
+        IArrayBuilder<TRootModel, TParentModel, TElement> End();
         
     }
 
-    public class ArrayObjectTemplateObjectBuilder<TParentModel, TElementModel> : TemplateBuilderBase<TParentModel,TElementModel>, IArrayBuilder<TParentModel, TElementModel>
+    public class ArrayObjectTemplateObjectBuilder<TRootModel, TParentModel, TElementModel> : 
+        TemplateBuilderBase<TRootModel, TParentModel,TElementModel>, IArrayBuilder<TRootModel, TParentModel, TElementModel> 
     {
-        private List<PipeActionBuilder<TElementModel>> _pipe = new List<PipeActionBuilder<TElementModel>>();
-        private Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
-        private IList<PipeActionBuilder<TParentModel>> _parent = null;
-        private Func<IJsonTemplateBuilderContext<TElementModel>, bool> _ifCheckExp = null;
+        private List<PipeActionBuilder<TRootModel, TElementModel>> _pipe = new List<PipeActionBuilder<TRootModel, TElementModel>>();
+        private Func<IJsonTemplateBuilderContext<TRootModel, TParentModel>, IEnumerable<TElementModel>> _arrayValueFactory = null;
+        private IList<PipeActionBuilder<TRootModel, TParentModel>> _parent = null;
+        private Func<IJsonTemplateBuilderContext<TRootModel, TElementModel>, bool> _ifCheckExp = null;
         private string _propertyName = "";
         private string _displayPropertyName = "";
 
         public ArrayObjectTemplateObjectBuilder(
             string properyName,
             string displayPropertyName,
-            IObjectBuilderPipe<TParentModel> parent,
-            [Required]Func<IJsonTemplateBuilderContext<TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
+            IObjectBuilderPipe<TRootModel, TParentModel> parent,
+            [Required]Func<IJsonTemplateBuilderContext<TRootModel, TParentModel>, IEnumerable<TElementModel>> arrayValueFactory,
             NSwagSchemeBuilder schemeBuilder,
             JsonSchemaGenerator generator,
             JsonSchemaResolver resolver,
-            Func<IJsonTemplateBuilderContext<TElementModel>, bool> ifCheckExp = null
+            Func<IJsonTemplateBuilderContext<TRootModel, TElementModel>, bool> ifCheckExp = null
         ) : base(properyName,parent, schemeBuilder, generator, resolver, ifCheckExp)
         {
             _arrayValueFactory = arrayValueFactory;
@@ -54,9 +57,9 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             _displayPropertyName = displayPropertyName;
         }
 
-        public override IList<PipeActionBuilder<TElementModel>> Pipe => _pipe;
+        public override IList<PipeActionBuilder<TRootModel, TElementModel>> Pipe => _pipe;
 
-        public IArrayBuilder<TParentModel, TElementModel> End()
+        public IArrayBuilder<TRootModel, TParentModel, TElementModel> End()
         {
             _parent.Add((writer, context) =>
             {
@@ -68,7 +71,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 writer.WriteStartArray();
 
-                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TParentModel>(context.HttpContext, context.RootModel, context.Model, context.JsonSerializerSettings)
+                var array = _arrayValueFactory(new JsonTemplateBuilderContext<TRootModel, TParentModel>(context.HttpContext, (TRootModel)context.RootModel, context.Model, context.JsonSerializerSettings)
                 {
 
                     PropertyName = _propertyName
@@ -79,7 +82,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 {
                     foreach (var element in array)
                     {
-                        var newContext = new JsonTemplateBuilderContext<TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
+                        var newContext = new JsonTemplateBuilderContext<TRootModel,TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
                             //PropertyRenderChecker = context.PropertyRenderChecker
                             PropertyName = _propertyName
                         };
