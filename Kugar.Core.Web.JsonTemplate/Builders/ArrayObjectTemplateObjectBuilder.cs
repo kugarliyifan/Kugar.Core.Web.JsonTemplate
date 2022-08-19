@@ -4,11 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Log;
 using Kugar.Core.Web.JsonTemplate.Helpers;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Annotations;
 using NJsonSchema.Generation;
+using YamlDotNet.Core.Tokens;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
@@ -63,11 +66,15 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             _parent.Add((writer, context) =>
             {
-                var option =
-                    (IOptions<JsonTemplateOption>)context.HttpContext.RequestServices.GetService(
-                        typeof(IOptions<JsonTemplateOption>));
+                //var option =
+                //    (IOptions<JsonTemplateOption>)context.HttpContext.RequestServices.GetService(
+                //        typeof(IOptions<JsonTemplateOption>));
 
 
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始创建数组", "JsonTemplate");
+                }
 
                 writer.WriteStartArray();
 
@@ -80,38 +87,64 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
                 if (array?.HasData()??false)
                 {
-                    foreach (var element in array)
+                    var index = 0;
+
+                    try
                     {
-                        var newContext = new JsonTemplateBuilderContext<TRootModel,TElementModel>(context.HttpContext, context.RootModel,element,context.JsonSerializerSettings){
-                            //PropertyRenderChecker = context.PropertyRenderChecker
-                            PropertyName = _propertyName
-                        };
-
-                        if (!(_ifCheckExp?.Invoke(newContext)??true))
+                        foreach (var element in array)
                         {
-                            continue;
-                        }
-
-                        writer.WriteStartObject();
-                        
-                        foreach (var func in _pipe)
-                        {
-                            try
+                            var newContext = new JsonTemplateBuilderContext<TRootModel, TElementModel>(context.HttpContext, context.RootModel, element, context.JsonSerializerSettings)
                             {
-                                func(writer, newContext);
-                            }
-                            catch (Exception e)
-                            {
-                                Debugger.Break();
-                                throw;
-                            }
-                            
-                        }
+                                //PropertyRenderChecker = context.PropertyRenderChecker
+                                PropertyName = _propertyName
+                            };
 
-                        writer.WriteEndObject();
+                            if (!(_ifCheckExp?.Invoke(newContext) ?? true))
+                            {
+                                continue;
+                            }
+
+                            if (GlobalSettings.IsRenderTrace)
+                            {
+                                Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=输出属性值|{_propertyName}:index={index}", "JsonTemplate");
+                            }
+
+                            writer.WriteStartObject();
+
+                            foreach (var func in _pipe)
+                            {
+                                try
+                                {
+                                    func(writer, newContext);
+                                }
+                                catch (Exception e)
+                                {
+                                    Debug.WriteLine($"{this.GetType().Name}执行输出错误:{JsonConvert.SerializeObject(e)}", "JsonTemplate");
+                                    LoggerManager.Default.Error($"JsonTemplate:{this.GetType().Name}执行输出错误", e);
+                                    throw;
+                                }
+
+                            }
+
+                            writer.WriteEndObject();
+
+                            index++;
+                        }
                     }
+                    catch (Exception e)
+                    {
+                        LoggerManager.Default.Error($"{this.GetType().Name}|{_propertyName}执行输出错误:index={index}",e);
+                        throw;
+                    }
+
+                    
                 }
-                
+
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=结束创建数组", "JsonTemplate");
+                }
+
                 writer.WriteEndArray();
             });
 

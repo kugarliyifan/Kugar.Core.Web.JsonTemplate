@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq.Expressions;
+using Kugar.Core.ExtMethod;
+using Kugar.Core.Log;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Kugar.Core.Web.JsonTemplate.Helpers;
+using Newtonsoft.Json;
+using YamlDotNet.Core.Tokens;
 
 namespace Kugar.Core.Web.JsonTemplate.Invokers
 {
@@ -54,10 +59,19 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
             try
             {
-                return _invoke(context.Model);
+                var value= _invoke(context.Model);
+
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=输出属性值{value?.ToStringEx()??"空字符串"}", "JsonTemplate");
+                }
+
+                return value;
             }
             catch (Exception e)
             {
+                Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=输出错误 \n,{JsonConvert.SerializeObject(e)}", "JsonTemplate");
+                LoggerManager.Default.Error($"{this.GetType().Name}|Property:{context.PropertyName}",e);
                 throw new OutputRenderException(context, $"输出{displayName}出现错误", e)
                 {
                     DisplayPropertyPath = displayName

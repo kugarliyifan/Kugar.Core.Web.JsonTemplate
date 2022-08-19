@@ -8,7 +8,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using Kugar.Core.Log;
 using NJsonSchema.Generation;
+using YamlDotNet.Core.Tokens;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
@@ -74,27 +76,67 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         {
             var clist = childFactory(elements, parentElement).ToArrayEx();
 
+            if (GlobalSettings.IsRenderTrace)
+            {
+                Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始输出层级数据的对象", "JsonTemplate");
+            }
+
             if (clist.HasData())
             {
                 writer.WritePropertyName(childrenFieldName);
 
-                writer.WriteStartArray();
-
-                foreach (var item in clist)
+                if (GlobalSettings.IsRenderTrace)
                 {
-                    writer.WriteStartObject();
-                    var newContext = new JsonTemplateBuilderContext<TRootModel, TElementModel>(context.HttpContext,
-                        context.RootModel, item, context.JsonSerializerSettings,
-                        new Lazy<TemplateData>(context.GlobalTemporaryData));
-
-                    invokePipe(writer, newContext);
-
-                    writeHierarchy(writer, _childFieldName, elements, item, childFactory, context);
-
-                    writer.WriteEndObject();
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始输出根节点层级数据", "JsonTemplate");
                 }
 
+                writer.WriteStartArray();
+
+                var index = 0;
+
+                try
+                {
+                    foreach (var item in clist)
+                    {
+                        if (GlobalSettings.IsRenderTrace)
+                        {
+                            Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始输出对象:index={index}", "JsonTemplate");
+                        }
+
+                        writer.WriteStartObject();
+                        var newContext = new JsonTemplateBuilderContext<TRootModel, TElementModel>(context.HttpContext,
+                            context.RootModel, item, context.JsonSerializerSettings,
+                            new Lazy<TemplateData>(context.GlobalTemporaryData));
+                        
+                        invokePipe(writer, newContext);
+
+                        writeHierarchy(writer, _childFieldName, elements, item, childFactory, context);
+
+                        writer.WriteEndObject();
+
+                        index++;
+
+                        if (GlobalSettings.IsRenderTrace)
+                        {
+                            Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=结束输出对象:index={index}", "JsonTemplate");
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=输出层级数据错误:index={index}");
+                    LoggerManager.Default.Error($"{this.GetType().Name}|Property:{context.PropertyName}=输出层级数据错误:index={index}",e);
+                    throw;
+                }
+
+                
+
                 writer.WriteEndArray();
+
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=结束输出层级数组", "JsonTemplate");
+                }
             }
         }
 
@@ -108,6 +150,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 }
                 catch (Exception e)
                 {
+                    Debug.WriteLine($"{this.GetType().Name}输出层级数据错误:{JsonConvert.SerializeObject(e)}");
+                    LoggerManager.Default.Error($"{this.GetType().Name}输出层级数据错误" , e);
                     Debugger.Break();
                     throw;
                 }
@@ -120,6 +164,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             if (!string.IsNullOrEmpty(this.DisplayPropertyName))
             {
                 writer.WritePropertyName(this.DisplayPropertyName);
+            }
+
+            if (GlobalSettings.IsRenderTrace)
+            {
+                Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始输出根节点层级数据", "JsonTemplate");
             }
 
             writer.WriteStartArray();
@@ -147,11 +196,21 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                         continue;
                     }
 
+                    if (GlobalSettings.IsRenderTrace)
+                    {
+                        Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=开始输出根节点数据的对象", "JsonTemplate");
+                    }
+
                     writer.WriteStartObject();
 
                     invokePipe(writer, newContext);
 
                     //writer.WritePropertyName(_childFieldName);
+
+                    if (GlobalSettings.IsRenderTrace)
+                    {
+                        Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=结束输出根节点数据的对象", "JsonTemplate");
+                    }
 
                     writeHierarchy(writer, _childFieldName, array, element, _hierarchyFactory, newContext);
 

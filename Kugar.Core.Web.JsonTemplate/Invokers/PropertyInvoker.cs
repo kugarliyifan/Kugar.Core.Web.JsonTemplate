@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
+using Kugar.Core.ExtMethod;
+using Kugar.Core.Log;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Newtonsoft.Json;
 
@@ -10,8 +12,12 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
     /// </summary>
     /// <typeparam name="TCurrentModel"></typeparam>
     /// <typeparam name="TNewChildModel"></typeparam>
-    public struct PropertyInvoker<TRootModel, TCurrentModel, TNewChildModel>
+    /// <typeparam name="TRootModel">根节点类型</typeparam>
+    public class PropertyInvoker<TRootModel, TCurrentModel, TNewChildModel>
     {
+        private string _builderTypeName ="";
+        private Type _type = null;
+
         public string PropertyName { set; get; }
 
         public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, bool> ifCheckExp { set; get; }
@@ -20,17 +26,28 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
         public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, TNewChildModel> valueFactory { set; get; }
 
+        public Type BuilderTemplate
+        {
+            set
+            {
+                _builderTypeName=value.GetType().Name;
+                _type = value;
+            }
+            get
+            {
+                return _type;
+            }
+        }
+
         public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TRootModel, TCurrentModel> context)
         {
             context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
 
             if (context.Model==null)
-            {
-                Debugger.Break();
-                Trace.WriteLine($"正在输出:{context.PropertyName}");
+            { 
                 return;
             }
-
+            
             if (!(ifCheckExp?.Invoke(context) ?? true))
             {
                 return;
@@ -44,13 +61,24 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
             }
             catch (Exception e)
             {
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{_builderTypeName}|Property=数据生成错误:{PropertyName} \n{JsonConvert.SerializeObject(e)}");    
+                }
+                
+                LoggerManager.Default.Error($"{_builderTypeName}|Property=数据生成错误:{PropertyName}", e);
                 throw new DataFactoryException($"数据生成错误:{PropertyName}", e, context);
             }
 
             try
             {
                 writer.WritePropertyName(PropertyName);
-                 
+
+                if (GlobalSettings.IsRenderTrace)
+                {
+                    Debug.WriteLine($"{_builderTypeName}|Property=正在输出属性:{PropertyName}={(value?.ToStringEx() ?? "null")}");
+                }
+
                 if (value != null)
                 {
                     writer.WriteValue(value);
@@ -62,7 +90,13 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
             }
             catch (Exception e)
             {
-                throw new OutputRenderException(context, $"输出参数错误:{PropertyName}", e);
+                Debug.WriteLine($"{_builderTypeName}|Property=正在输出属性:{PropertyName}={(value?.ToStringEx() ?? "null")} Errors:\n{JsonConvert.SerializeObject(e)}");
+
+                LoggerManager.Default.Error($"{_builderTypeName}|Property=输出参数错误:{PropertyName}", e);
+
+                throw new OutputRenderException(context, $"{_builderTypeName}=输出参数错误:{PropertyName}", e);
+
+                
             }
         }
     }

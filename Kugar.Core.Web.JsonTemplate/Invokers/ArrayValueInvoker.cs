@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Kugar.Core.ExtMethod;
+using Kugar.Core.Log;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Newtonsoft.Json;
 
@@ -11,8 +13,11 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
     /// </summary>
     /// <typeparam name="TCurrentModel"></typeparam>
     /// <typeparam name="TArrayElement"></typeparam>
-    public struct ArrayValueInvoker<TRootModel, TCurrentModel, TArrayElement>
+    public class ArrayValueInvoker<TRootModel, TCurrentModel, TArrayElement>
     {
+        private string _builderTypeName = "";
+        private Type _type = null;
+
         public string PropertyName { set; get; }
 
         public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, IEnumerable<TArrayElement>> valueFactory { set; get; }
@@ -21,11 +26,29 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
         public string ParentDisplayName { set; get; }
 
+        public Type BuilderTemplate
+        {
+            set
+            {
+                _builderTypeName = value.GetType().Name;
+                _type = value;
+            }
+            get
+            {
+                return _type;
+            }
+        }
+
         public void Invoke(JsonWriter writer, IJsonTemplateBuilderContext<TRootModel, TCurrentModel> context)
         {
             context.PropertyName = $"{ParentDisplayName}.{PropertyName}";
 
             IEnumerable<TArrayElement> data = null;
+
+            if (GlobalSettings.IsRenderTrace)
+            {
+                Debug.WriteLine($"{_builderTypeName}|Property=开始输出{context.PropertyName}");
+            }
 
             try
             {
@@ -33,7 +56,8 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
             }
             catch (Exception e)
             {
-
+                Debug.WriteLine($"{_builderTypeName}|Array=数据生成错误:{ParentDisplayName} \n{JsonConvert.SerializeObject(e)}");
+                LoggerManager.Default.Error($"{_builderTypeName}|Array=输出参数错误:{ParentDisplayName}", e);
                 throw new DataFactoryException($"数据生成错误:{ParentDisplayName}", e, context);
             }
 
@@ -59,6 +83,11 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
                 {
                     foreach (var value in data)
                     {
+                        if (value==null)
+                        {
+                            continue;
+                        }
+
                         context.Serializer.Serialize(writer, value);
                         //await writer.WriteValueAsync(value);
                     }
@@ -68,6 +97,8 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
             }
             catch (Exception e)
             {
+                Debug.WriteLine($"{_builderTypeName}|Array=数据生成错误:{PropertyName} \n{JsonConvert.SerializeObject(e)}");
+                LoggerManager.Default.Error($"{_builderTypeName}|Array=输出参数错误:{PropertyName}", e);
                 throw new OutputRenderException(context, $"数据输出错误:{context.PropertyName}", e);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Kugar.Core.Web.JsonTemplate.Helpers;
@@ -67,6 +68,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             }
             catch (Exception e)
             {
+                Debug.WriteLine($"ChildJsonTemplateObjectBuilder:{DisplayPropertyName}=生成数据错误={e.Message}");
                 throw new DataFactoryException("生成数据错误", e, context);
             }
             
@@ -93,6 +95,11 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 if (_isNewObject)
                 {
+                    if (GlobalSettings.IsRenderTrace)
+                    {
+                        Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName} =开始json对象输出");
+                    }
+                        
                     writer.WriteStartObject();
                 }
 
@@ -100,6 +107,10 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 
                 if (_isNewObject)
                 {
+                    if (GlobalSettings.IsRenderTrace)
+                    {
+                        Debug.WriteLine($"{this.GetType().Name}|Property:{context.PropertyName}=结束json对象输出");
+                    } 
                     writer.WriteEndObject();
                 }
             }
