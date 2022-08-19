@@ -42,11 +42,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             {
                 newPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
             }
-
-            //var callerReturnType = ExpressionHelpers.GetExprReturnType(objectPropertyExp);
-
-            //var invoker = objectPropertyExp.Compile();
-
+            
             if (string.IsNullOrEmpty(description))
             {
                 description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
@@ -190,6 +186,35 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             }
 
             return builder;
+        }
+
+        public static ITemplateBuilder<TRootModel, TModel> AddArrayValue<TRootModel, TModel,TElement>(
+            this ITemplateBuilder<TRootModel, TModel> builder,
+            Expression<Func<TModel, IEnumerable<TElement>>> objectPropertyExp,
+            string description = "",
+            string newPropertyName = null,
+            Func<IJsonTemplateBuilderContext<TRootModel, TElement>, bool> ifCheckExp = null
+        )
+        {
+            if (objectPropertyExp == null)
+            {
+                throw new ArgumentNullException(nameof(objectPropertyExp));
+            }
+
+            if (string.IsNullOrEmpty(newPropertyName))
+            {
+                newPropertyName = ExpressionHelpers.GetExpressionPropertyName(objectPropertyExp);
+            }
+
+            if (string.IsNullOrEmpty(description))
+            {
+                description = ExpressionHelpers.GetMemberDescription(ExpressionHelpers.GetMemberExpr(objectPropertyExp));
+            }
+
+            var exp = new PropertyExpInvoker<TRootModel, TModel, IEnumerable<TElement>>(newPropertyName,
+                objectPropertyExp);
+
+            return builder.AddArrayValue(newPropertyName, exp.Invoke, description: description );
         }
     }
 }

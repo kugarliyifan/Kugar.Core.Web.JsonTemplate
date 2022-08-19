@@ -4,7 +4,7 @@
 		<TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
 		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.0.2</Version>
+		<Version>1.1.0.4</Version>
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
@@ -13,9 +13,12 @@
 		<RepositoryUrl>https://github.com/kugarliyifan/Kugar.Core.Web.JsonTemplate</RepositoryUrl>
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-		<PackageReleaseNotes>1.优化类库的基类,使得扩展函数可以统一
-2.基类增加RootModel的泛型参数,用于当子类需要从根类获取数据时,不需要再通过动态类进行转换
-3.增加HierarchyJsonTemplateBuilder类,可输出带层级的数据,比如多级分类</PackageReleaseNotes>
+		<PackageReleaseNotes>
+			1.优化类库的基类,使得扩展函数可以统一
+			2.基类增加RootModel的泛型参数,用于当子类需要从根类获取数据时,不需要再通过动态类进行转换
+			3.增加HierarchyJsonTemplateBuilder类,可输出带层级的数据,比如多级分类
+			4.增加调试输出:Debug模式下或者appsetting.json下 增加 JsonTemplate:{RenderTrace:true}
+		</PackageReleaseNotes>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<RepositoryType>git</RepositoryType>
 	</PropertyGroup>
@@ -38,18 +41,18 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-	  <Optimize>False</Optimize>
+		<Optimize>False</Optimize>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
-	  <Optimize>False</Optimize>
+		<Optimize>False</Optimize>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Builders\JsonTemplateObjectBuilder.cs" />
-	  <Compile Remove="Builders\ObjectTemplateBuilder.cs" />
-	  <Compile Remove="Helpers\IArrayBuilderExtMethod.cs" />
-	  <Compile Remove="Helpers\IChildObjectBuilderExtMethod.cs" />
+		<Compile Remove="Builders\JsonTemplateObjectBuilder.cs" />
+		<Compile Remove="Builders\ObjectTemplateBuilder.cs" />
+		<Compile Remove="Helpers\IArrayBuilderExtMethod.cs" />
+		<Compile Remove="Helpers\IChildObjectBuilderExtMethod.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -71,12 +74,12 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
 			<Version>5.0.1</Version>
 		</PackageReference>
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" />
-	</ItemGroup>-->
+	</ItemGroup>
 	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
 			<Version>6.0.8</Version>
