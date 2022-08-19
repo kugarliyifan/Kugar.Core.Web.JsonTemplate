@@ -108,6 +108,12 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
             
                 
             return builder.AddArrayObject("Data", x => valueFactory(x).GetData(), description: "数据内容");
-        } 
+        }
+
+        public static IArrayBuilder<TRootModel, IPagedList<TElement>, TElement> FromPagedList<TRootModel,  TElement>(
+            this ITemplateBuilder<TRootModel,IPagedList<TElement>> builder)
+        {
+            return builder.FromPagedList(x => x.Model);
+        }
     }
 }

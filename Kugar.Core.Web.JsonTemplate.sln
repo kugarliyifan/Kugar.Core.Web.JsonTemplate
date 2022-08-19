@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31019.35
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32804.467
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate", "Kugar.Core.Web.JsonTemplate\Kugar.Core.Web.JsonTemplate.csproj", "{79A3206D-EFE4-4782-94ED-39B720FD142B}"
 EndProject
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kugar.Core.Web.JsonTemplate.UnitTest", "Kugar.Core.Web.JsonTemplate.UnitTest\Kugar.Core.Web.JsonTemplate.UnitTest.csproj", "{46271784-02D5-48C5-90A6-383096ECFD27}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kugar.Core.Web.JsonTemplate.Compatibility", "Kugar.Core.Web.JsonTemplate.Compatibility\Kugar.Core.Web.JsonTemplate.Compatibility.csproj", "{BEFC41BA-EEDC-4F4D-949F-BA102DE1C382}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kugar.Core.Web.JsonTemplate.Compatibility", "Kugar.Core.Web.JsonTemplate.Compatibility\Kugar.Core.Web.JsonTemplate.Compatibility.csproj", "{A9A24806-D7D1-48CF-91B5-FA9E7A8FBA10}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{46271784-02D5-48C5-90A6-383096ECFD27}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46271784-02D5-48C5-90A6-383096ECFD27}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46271784-02D5-48C5-90A6-383096ECFD27}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BEFC41BA-EEDC-4F4D-949F-BA102DE1C382}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BEFC41BA-EEDC-4F4D-949F-BA102DE1C382}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BEFC41BA-EEDC-4F4D-949F-BA102DE1C382}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BEFC41BA-EEDC-4F4D-949F-BA102DE1C382}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9A24806-D7D1-48CF-91B5-FA9E7A8FBA10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9A24806-D7D1-48CF-91B5-FA9E7A8FBA10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9A24806-D7D1-48CF-91B5-FA9E7A8FBA10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9A24806-D7D1-48CF-91B5-FA9E7A8FBA10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

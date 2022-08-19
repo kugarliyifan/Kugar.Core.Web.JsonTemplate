@@ -1,7 +1,22 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+	  <TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
+	  <RootNamespace>Kugar.Core.Web.JsonTemplate.Compatibility</RootNamespace>
+	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	  <Version>1.0.0.1</Version>
+	  <Authors>Kugar</Authors>
+	  <Product>Kugar.Core.Web.JsonTemplate.Compatibility</Product>
+	  <RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
+	  <Description>用于兼容不同版本之间的类的转换</Description>
+	  <PackageProjectUrl>https://github.com/kugarliyifan/Kugar.Core.Web.JsonTemplate</PackageProjectUrl>
+	  <RepositoryUrl>https://github.com/kugarliyifan/Kugar.Core.Web.JsonTemplate</RepositoryUrl>
+	  <IncludeSymbols>true</IncludeSymbols>
+	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+	  <PackageReleaseNotes> 
+	  </PackageReleaseNotes>
+	  <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+	  <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
