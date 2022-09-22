@@ -147,6 +147,10 @@ namespace Kugar.Core.Web.JsonTemplate
             {
                 return JsonObjectType.String;
             }
+            else if (type == typeof(Guid))
+            {
+                return JsonObjectType.String;
+            }
             else
             {
                 return JsonObjectType.Object;

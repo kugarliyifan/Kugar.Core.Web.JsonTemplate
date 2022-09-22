@@ -14,7 +14,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         ITemplateBuilder<TRootModel, TModel> AddProperty<TValue>(string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TValue> valueFactory,
             string description = "",
-            bool isNull = false,
+            bool? isNull = null,
             object example = null,
             Type newValueType = null,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null);
@@ -69,7 +69,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public virtual ITemplateBuilder<TRootModel, TModel> AddProperty<TValue>(string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TValue> valueFactory,
             string description = "",
-            bool isNull = false,
+            bool? isNull = null,
             object example = null,
             Type newValueType = null,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null)
@@ -78,6 +78,8 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             Debug.Assert(valueFactory != null);
 
             propertyName = SchemaBuilder.GetFormatPropertyName(propertyName);
+
+            newValueType ??= typeof(TValue);
 
             var propertyInvoke = new PropertyInvoker<TRootModel, TModel, TValue>()
             {
@@ -90,11 +92,25 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             Pipe.Add(propertyInvoke.Invoke);
 
-            JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
+            JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType);
 
+            if (!isNull.HasValue)
+            {
+                if ( (newValueType.IsGenericType && 
+                    newValueType.GetGenericTypeDefinition() == typeof(Nullable<>)) 
+                    )
+                {
+                    isNull = true;
+                }
+                else
+                {
+                    isNull = false;
+                }
+
+            }
 
             SchemaBuilder.AddSingleProperty(propertyName, jsonType,
-                description, example, isNull);
+                description, example, isNull??false);
 
             return this;
         }
