@@ -96,28 +96,46 @@ namespace Kugar.Core.Web.JsonTemplate
                 var modelContext = new JsonTemplateBuilderContext<TModel,TModel>(context.HttpContext, model, model, jsonSettings);
                 //modelContext.PropertyRenderChecker = ((JsonTemplateBase<TModel>) objectBuilder).PropertyRenderCheck;
 
-                foreach (var pipe in objectBuilder.Pipe)
+                try
                 {
-                    try
+                    foreach (var pipe in objectBuilder.Pipe)
                     {
-                        pipe(jsonWriter, modelContext);
+                        try
+                        {
+                            pipe(jsonWriter, modelContext);
+                        }
+                        catch (TaskCanceledException e)
+                        {
+                            //如果是请求中断,不抛出错误避免IDE报错
+                            return;
+                        }
+                        catch (Exception e)
+                        {
+                            var logger = (ILogger)context.HttpContext.RequestServices.GetService(typeof(ILogger));
+                            logger.Log(LogLevel.Error, "piple函数执行出错", e);
+
+                            context.HttpContext.Response.StatusCode = 500;
+
+
+                            await Task.FromException(e);
+
+                            //throw;
+                        }
+
                     }
-                    catch (Exception e)
-                    {
-                        var logger = (ILogger)context.HttpContext.RequestServices.GetService(typeof(ILogger));
-                        logger.Log(LogLevel.Error, "piple函数执行出错", e);
 
-                        context.HttpContext.Response.StatusCode = 500;
-
-
-                        await Task.FromException(e);
-
-                        //throw;
-                    }
-
+                    await jsonWriter.FlushAsync(context.HttpContext.RequestAborted);
                 }
-
-                await jsonWriter.FlushAsync(context.HttpContext.RequestAborted);
+                catch (TaskCanceledException e)
+                {
+                    //如果是请求中断,不抛出错误避免IDE报错
+                    return;
+                }
+                catch (Exception e)
+                {
+                    throw;
+                }
+                
             }
 
         }
