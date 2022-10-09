@@ -53,7 +53,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public virtual Type ModelType { get; } = typeof(TModel);
 
         public ITemplateBuilder<TModel, TModel> AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel, TModel>, TValue> valueFactory, string description = "",
-            bool isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel, TModel>, bool> ifCheckExp = null)
+            bool? isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel, TModel>, bool> ifCheckExp = null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -70,14 +70,34 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             Pipe.Add(propertyInvoke.Invoke);
 
-            JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
+            var jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
 
+            if (!isNull.HasValue)
+            {
+                switch (jsonType)
+                { 
+                    case JsonObjectType.Array:
+                    case JsonObjectType.File:
+                    case JsonObjectType.String:
+                    case JsonObjectType.Object:
+                    case JsonObjectType.Null:
+                        isNull = true;
+                        break;
+                    case JsonObjectType.Boolean: 
+                    case JsonObjectType.Integer:
+                    case JsonObjectType.Number:
+                        isNull = false;
+                        break; 
+                }
+            }
 
             SchemaBuilder.AddSingleProperty(propertyName, jsonType,
-                description, example, isNull);
+                description, example, isNull??true);
 
             return this;
         }
+
+ 
 
         public virtual ITemplateBuilder<TModel, TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TModel, TModel>, TChildModel> valueFactory,
