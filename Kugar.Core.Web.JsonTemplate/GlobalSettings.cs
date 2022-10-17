@@ -11,9 +11,9 @@ namespace Kugar.Core.Web.JsonTemplate
         static GlobalSettings()
         {
             IsRenderTrace = CustomConfigManager.Default["JsonTemplate:RenderTrace"].ToBool();
-#if DEBUG
-            IsRenderTrace = true;
-#endif
+//#if DEBUG
+//            IsRenderTrace = true;
+//#endif
 
         }
 

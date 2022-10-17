@@ -40,22 +40,27 @@ namespace Kugar.Core.Web.JsonTemplate.Processors
                     c.OperationDescription.Operation.Consumes.Add("application/*+json");
                 }
 
-                var args = context.Parameters.Where(x=>isFromBody(x.Key)).ToArrayEx();
+                var args = context.Parameters.Where(x => isFromBody(x.Key)).ToArrayEx();
 
                 context.OperationDescription.Operation.Parameters.Remove(x=>args.Any(y=>y.Key.Name==x.Name));
 
                 var methodName = context.MethodInfo.DeclaringType.FullName + "." + context.MethodInfo.Name;
 
-                var methodXmlNode = ExpressionHelpers.XmlDoc.GetElementsByTagName("member").AsEnumerable<XmlElement>()
+                var methodXmlNode = ExpressionHelpers.XmlDoc?.GetElementsByTagName("member").AsEnumerable<XmlElement>()
                     .Where(x => x.GetAttribute("name").StartsWith($"M:{methodName}"))
                     .FirstOrDefault();
-
+                
                 var paramXmlNodes = (methodXmlNode?.GetElementsByTagName("param").AsEnumerable<XmlElement>().ToArrayEx())??Array.Empty<XmlElement>();
 
                 var jsonSechma = new JsonSchema();
-
+                
                 foreach (var p1 in args)
                 {
+                    if (p1.Value==null)
+                    {
+                        continue;
+                    }
+
                     var pschema = p1.Value.Schema;
 
                     var isRequired = p1.Value.IsRequired;

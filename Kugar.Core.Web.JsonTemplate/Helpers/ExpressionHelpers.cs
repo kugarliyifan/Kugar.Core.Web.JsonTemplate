@@ -200,6 +200,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
 
             if (!File.Exists(xmlFilePath))
             {
+                XmlDoc= new XmlDocument();
                 return;
             }
 
