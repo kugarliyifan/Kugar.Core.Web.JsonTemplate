@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netcoreapp3.1;net5.0;</TargetFrameworks>
+		<TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
 		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.0.6</Version>
+		<Version>1.1.0.14</Version>
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
@@ -18,6 +18,7 @@
 			2.基类增加RootModel的泛型参数,用于当子类需要从根类获取数据时,不需要再通过动态类进行转换
 			3.增加HierarchyJsonTemplateBuilder类,可输出带层级的数据,比如多级分类
 			4.增加调试输出:Debug模式下或者appsetting.json下 增加 JsonTemplate:{RenderTrace:true}
+			5.AddProperty增加要给isRawValue,用于直接输出原始json的数据(返回值格式必须是string)
 		</PackageReleaseNotes>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<RepositoryType>git</RepositoryType>
@@ -26,27 +27,17 @@
 	<PropertyGroup Condition="  '$(TargetFramework)' == 'netcoreapp3.1'">
 		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 	</PropertyGroup>
+ 
 
-	<ItemGroup Condition="  '$(TargetFramework)' == 'netcoreapp3.1'">
-		<FrameworkReference Include="Microsoft.AspNetCore.App" />
-	</ItemGroup>
-
-	<ItemGroup Condition="  '$(TargetFramework)' == 'net5.0'">
+	<ItemGroup Condition="  '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netcoreapp5.0' ">
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<OutputPath>bin\</OutputPath>
 		<DocumentationFile>\bin\Kugar.Core.Web.JsonTemplate.xml</DocumentationFile>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netcoreapp3.1|AnyCPU'">
-		<Optimize>False</Optimize>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net5.0|AnyCPU'">
-		<Optimize>False</Optimize>
-	</PropertyGroup>
+	</PropertyGroup> 
+ 
 
 	<ItemGroup>
 		<Compile Remove="Builders\JsonTemplateObjectBuilder.cs" />
@@ -58,8 +49,8 @@
 	<ItemGroup>
 		<PackageReference Include="fasterflect" Version="3.0.0" />
 		<PackageReference Include="Kugar.Core.NetCore" Version="1.2.160" />
-		<PackageReference Include="Kugar.Core.Web.NetCore" Version="1.0.215" />
-		<PackageReference Include="NSwag.AspNetCore" Version="13.16.1" />
+		<PackageReference Include="Kugar.Core.Web.NetCore" Version="1.0.234" />
+		<PackageReference Include="NSwag.AspNetCore" Version="13.18.2" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
@@ -74,12 +65,7 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
-			<Version>5.0.1</Version>
-		</PackageReference>
-		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.1" />
-	</ItemGroup>
+
 	<!--<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson">
 			<Version>6.0.8</Version>

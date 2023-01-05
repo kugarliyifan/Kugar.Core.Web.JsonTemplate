@@ -53,7 +53,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
         public virtual Type ModelType { get; } = typeof(TModel);
 
         public ITemplateBuilder<TModel, TModel> AddProperty<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TModel, TModel>, TValue> valueFactory, string description = "",
-            bool? isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel, TModel>, bool> ifCheckExp = null)
+            bool? isNull = false, object example = null, Type newValueType = null, Func<IJsonTemplateBuilderContext<TModel, TModel>, bool> ifCheckExp = null,bool isRawValue=false,JsonObjectType? jsonType=null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -65,12 +65,17 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 ifCheckExp = ifCheckExp,
                 ParentDisplayName = propertyName,
                 PropertyName = propertyName,
-                valueFactory = valueFactory
+                valueFactory = valueFactory,
+                IsRawRender = isRawValue
             };
 
             Pipe.Add(propertyInvoke.Invoke);
 
-            var jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));
+            if (!jsonType.HasValue)
+            {
+                jsonType =typeof(TValue)==typeof(string) && isRawValue?JsonObjectType.Object: NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType ?? typeof(TValue));   
+            }
+             
 
             if (!isNull.HasValue)
             {
@@ -91,7 +96,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 }
             }
 
-            SchemaBuilder.AddSingleProperty(propertyName, jsonType,
+            SchemaBuilder.AddSingleProperty(propertyName, jsonType.Value,
                 description, example, isNull??true);
 
             return this;

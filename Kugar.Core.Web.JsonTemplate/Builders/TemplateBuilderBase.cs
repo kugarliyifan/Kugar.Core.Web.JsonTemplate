@@ -17,7 +17,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             bool? isNull = null,
             object example = null,
             Type newValueType = null,
-            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null);
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null,bool isRawValue=false,JsonObjectType? jsonType=null);
 
         ITemplateBuilder<TRootModel, TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TChildModel> valueFactory,
@@ -72,7 +72,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             bool? isNull = null,
             object example = null,
             Type newValueType = null,
-            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null)
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, bool> ifCheckExp = null,bool isRawValue=false,JsonObjectType? jsonType=null)
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(propertyName));
             Debug.Assert(valueFactory != null);
@@ -87,12 +87,18 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 ifCheckExp = ifCheckExp,
                 ParentDisplayName = DisplayPropertyName,
                 PropertyName = propertyName,
-                valueFactory = valueFactory
+                valueFactory = valueFactory,
+                IsRawRender = isRawValue
             };
 
             Pipe.Add(propertyInvoke.Invoke);
 
-            JsonObjectType jsonType = NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType);
+            if (jsonType==null)
+            {
+                jsonType =typeof(TValue)==typeof(string) && isRawValue?JsonObjectType.Object:NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType);    
+            }
+
+            
 
             if (!isNull.HasValue)
             {
@@ -109,7 +115,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
             }
 
-            SchemaBuilder.AddSingleProperty(propertyName, jsonType,
+            SchemaBuilder.AddSingleProperty(propertyName, jsonType.Value,
                 description, example, isNull??false);
 
             return this;

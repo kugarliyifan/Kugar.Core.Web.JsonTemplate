@@ -44,7 +44,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
             JsonSerializerSettings jsonSettings = null;
 
-            var jsonOpt = (IOptionsSnapshot<MvcNewtonsoftJsonOptions>)context.HttpContext.RequestServices.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
+            var jsonOpt = (IOptions<MvcNewtonsoftJsonOptions>)context.HttpContext.RequestServices.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
 
             if (jsonOpt?.Value != null)
             {

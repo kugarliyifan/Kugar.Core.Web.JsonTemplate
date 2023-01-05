@@ -181,7 +181,7 @@ namespace Kugar.Core.Web.JsonTemplate
 
             var scheme = new JsonSchema();
 
-            var jsonOpt = (IOptionsSnapshot<MvcNewtonsoftJsonOptions>)Provider.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
+            var jsonOpt = (IOptions<MvcNewtonsoftJsonOptions>)Provider.GetService(typeof(IOptions<MvcNewtonsoftJsonOptions>));
 
             if (jsonOpt?.Value != null)
             {

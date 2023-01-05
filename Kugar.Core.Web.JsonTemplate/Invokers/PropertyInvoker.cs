@@ -24,6 +24,8 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
         public string ParentDisplayName { set; get; }
 
+        public bool IsRawRender { set; get; }
+
         public Func<IJsonTemplateBuilderContext<TRootModel, TCurrentModel>, TNewChildModel> valueFactory { set; get; }
 
         public Type BuilderTemplate
@@ -81,7 +83,24 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
                 if (value != null)
                 {
-                    writer.WriteValue(value);
+                    if (IsRawRender && value is string  s)
+                    {
+                        if (!string.IsNullOrEmpty(s))
+                        { 
+                            writer.WriteRawValue(s);
+                            //writer.WriteRaw(s);    
+                            //writer.WriteEnd();
+                        }
+                        else
+                        {
+                            writer.WriteNull();
+                        }
+                    }
+                    else
+                    {
+                        writer.WriteValue(value);    
+                    }
+                    
                 }
                 else
                 {
