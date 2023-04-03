@@ -4,7 +4,7 @@
 		<TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
 		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.0.15</Version>
+		<Version>1.1.0.18</Version>
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
@@ -14,7 +14,7 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageReleaseNotes>
-			解决当FromObject中表达式返回的值为null时报错的bug
+			增加了当出现重复的参数或者重复的action时,抛出的错误中,记录是哪个action报错的
 		</PackageReleaseNotes>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<RepositoryType>git</RepositoryType>
