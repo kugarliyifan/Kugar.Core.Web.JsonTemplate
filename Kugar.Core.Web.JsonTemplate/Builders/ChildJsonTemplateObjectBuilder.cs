@@ -118,7 +118,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             {
                 if (_isNewObject)
                 {
-                    Debugger.Break();
+                    //Debugger.Break();
                     writer.WriteNull();
                 }
                     

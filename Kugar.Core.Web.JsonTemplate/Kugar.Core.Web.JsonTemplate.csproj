@@ -4,7 +4,7 @@
 		<TargetFrameworks>netcoreapp3.1;net5.0;net6.0;net7.0</TargetFrameworks>
 		<RootNamespace>Kugar.Core.Web.JsonTemplate</RootNamespace>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Version>1.1.0.18</Version>
+		<Version>1.1.0.22</Version>
 		<Authors>Kugar</Authors>
 		<Product>Kugar.Core.Web.JsonTemplate</Product>
 		<RazorGenerateComponentDesignTime>true</RazorGenerateComponentDesignTime>
@@ -14,7 +14,8 @@
 		<IncludeSymbols>true</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageReleaseNotes>
-			增加了当出现重复的参数或者重复的action时,抛出的错误中,记录是哪个action报错的
+			1.增加了当出现重复的参数或者重复的action时,抛出的错误中,记录是哪个action报错的
+			2.AddProperty系列的函数,在传入的值是值类型的数组的时候,可以直接输出,相当于代替AddArrayValue
 		</PackageReleaseNotes>
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<RepositoryType>git</RepositoryType>

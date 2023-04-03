@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Kugar.Core.ExtMethod;
 using Kugar.Core.Log;
+using Kugar.Core.Web.JsonTemplate.Exceptions;
 using Kugar.Core.Web.JsonTemplate.Invokers;
 using Newtonsoft.Json;
 using NJsonSchema;
 using NJsonSchema.Generation;
+using YamlDotNet.Core.Tokens;
 
 namespace Kugar.Core.Web.JsonTemplate.Builders
 {
@@ -66,6 +70,21 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
 
         protected virtual string DisplayPropertyName { get; }
 
+        /// <summary>
+        /// 添加一个单值类型或值类型数组的属性,
+        /// </summary>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="valueFactory"></param>
+        /// <param name="description"></param>
+        /// <param name="isNull"></param>
+        /// <param name="example"></param>
+        /// <param name="newValueType"></param>
+        /// <param name="ifCheckExp"></param>
+        /// <param name="isRawValue"></param>
+        /// <param name="jsonType"></param>
+        /// <returns></returns>
+        /// <exception cref="DataFactoryException"></exception>
         public virtual ITemplateBuilder<TRootModel, TModel> AddProperty<TValue>(string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TValue> valueFactory,
             string description = "",
@@ -98,7 +117,23 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 jsonType =typeof(TValue)==typeof(string) && isRawValue?JsonObjectType.Object:NSwagSchemeBuilder.NetTypeToJsonObjectType(newValueType);    
             }
 
-            
+            if (typeof(TValue).IsIEnumerable())
+            {
+                var type = typeof(TValue);
+
+                if (type.IsGenericType)
+                {
+                    var itemType = type.GenericTypeArguments[0];
+
+                    if (!itemType.IsPrimitive &&  itemType!=typeof(string))
+                    {
+                        throw new DataFactoryException($"由于使用了AddProperty函数,因此{propertyName}返回的值必须是值类型或值类型数组,不允许是对象数组");
+                    }
+                }
+                
+
+                
+            }
 
             if (!isNull.HasValue)
             {
@@ -121,6 +156,16 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return this;
         }
 
+        /// <summary>
+        /// 添加一个新的对象
+        /// </summary>
+        /// <typeparam name="TChildModel"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="valueFactory"></param>
+        /// <param name="isNull"></param>
+        /// <param name="description"></param>
+        /// <param name="ifCheck"></param>
+        /// <returns></returns>
         public virtual ITemplateBuilder<TRootModel, TChildModel> AddObject<TChildModel>(string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, TChildModel> valueFactory,
             bool isNull = false,
@@ -152,6 +197,17 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
                 true, ifCheck).Start();
         }
 
+        /// <summary>
+        /// 添加一个对象数组
+        /// </summary>
+        /// <typeparam name="TArrayNewElement"></typeparam>
+        /// <param name="propertyName"></param>
+        /// <param name="valueFactory"></param>
+        /// <param name="isNull"></param>
+        /// <param name="description"></param>
+        /// <param name="ifCheckExp"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public virtual IArrayBuilder<TRootModel, TModel,TArrayNewElement> AddArrayObject<TArrayNewElement>(
             string propertyName,
             Func<IJsonTemplateBuilderContext<TRootModel, TModel>, IEnumerable<TArrayNewElement>> valueFactory,
@@ -180,6 +236,7 @@ namespace Kugar.Core.Web.JsonTemplate.Builders
             return s;
         }
 
+        [Obsolete("请使用AddProperty代替")]
         public virtual ITemplateBuilder<TRootModel, TModel> AddArrayValue<TValue>(string propertyName, Func<IJsonTemplateBuilderContext<TRootModel, TModel>, IEnumerable<TValue>> valueFactory, bool isNull = false,
             string description = "", Func<IJsonTemplateBuilderContext<TRootModel, IEnumerable<TValue>>, bool> ifNullRender = null)
         {

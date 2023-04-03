@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using Kugar.Core.ExtMethod;
 using Kugar.Core.Log;
@@ -74,6 +75,11 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
 
             try
             {
+                //if (value is IEnumerable)
+                //{
+                //    throw new DataFactoryException($"由于使用了AddProperty函数,因此{PropertyName}返回的值必须是值类型,不允许是数组");
+                //}
+
                 writer.WritePropertyName(PropertyName);
 
                 if (GlobalSettings.IsRenderTrace)
@@ -98,7 +104,23 @@ namespace Kugar.Core.Web.JsonTemplate.Invokers
                     }
                     else
                     {
-                        writer.WriteValue(value);    
+                        if (!(value is string)  && value is IEnumerable arr)
+                        {
+                            //Debugger.Break();
+                            writer.WriteStartArray();
+
+                            foreach (var item in arr)
+                            {
+                                writer.WriteValue(item);
+                            }
+
+                            writer.WriteEndArray();
+                        }
+                        else
+                        {
+                            writer.WriteValue(value);
+                        }
+                         
                     }
                     
                 }
