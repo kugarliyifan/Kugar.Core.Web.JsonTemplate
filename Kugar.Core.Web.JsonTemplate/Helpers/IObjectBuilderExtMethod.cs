@@ -176,7 +176,7 @@ namespace Kugar.Core.Web.JsonTemplate.Helpers
         public static ITemplateBuilder<TRootModel, TModel> AddArrayObjectProperties<TRootModel, TModel,TNewElement>(
             this ITemplateBuilder<TRootModel, TModel> builder,
             string propName,
-            Func<IJsonTemplateBuilderContext<TModel>, IEnumerable<TNewElement>> objectValueFunc,
+            Func<IJsonTemplateBuilderContext<TRootModel, TModel>, IEnumerable<TNewElement>> objectValueFunc,
             params Expression<Func<TNewElement, object>>[] properties
         )
         {
